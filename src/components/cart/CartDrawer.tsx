@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { CartItem } from "@/components/cart/CartItem";
@@ -11,6 +12,7 @@ import { useUiStore } from "@/store/ui.store";
 import { useCart, useRemoveCartItem, useUpdateCartItem } from "@/hooks/useCart";
 
 export function CartDrawer() {
+  const router = useRouter();
   const isOpen = useUiStore((state) => state.isCartDrawerOpen);
   const setOpen = useUiStore((state) => state.setCartDrawerOpen);
   const { data: cart, isLoading } = useCart();
@@ -43,7 +45,13 @@ export function CartDrawer() {
         {items.length > 0 && (
           <>
             <div className="px-4 pb-4">
-              <CartSummary subTotal={cart?.subTotal ?? 0} />
+              <CartSummary
+                subTotal={cart?.subTotal ?? 0}
+                onCheckout={() => {
+                  setOpen(false);
+                  router.push("/checkout");
+                }}
+              />
             </div>
             <SheetFooter>
               <Button variant="outline" render={<Link href="/cart" onClick={() => setOpen(false)} />}>

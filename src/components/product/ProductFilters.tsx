@@ -15,6 +15,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCategories } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
+import { useTags } from "@/hooks/useTags";
 import type { ProductFilters as ProductFiltersType } from "@/types/product";
 
 const SORT_OPTIONS: { value: NonNullable<ProductFiltersType["sort"]>; label: string }[] = [
@@ -29,13 +30,15 @@ interface ProductFiltersProps {
   onChange: (filters: ProductFiltersType) => void;
   hideCategory?: boolean;
   hideBrand?: boolean;
+  hideTag?: boolean;
 }
 
-export function ProductFilters({ value, onChange, hideCategory, hideBrand }: ProductFiltersProps) {
+export function ProductFilters({ value, onChange, hideCategory, hideBrand, hideTag }: ProductFiltersProps) {
   const [search, setSearch] = useState(value.search ?? "");
   const debouncedSearch = useDebounce(search, 400);
   const { data: categories } = useCategories();
   const { data: brands } = useBrands();
+  const { data: tags } = useTags();
 
   useEffect(() => {
     if (debouncedSearch === (value.search ?? "")) return;
@@ -46,7 +49,13 @@ export function ProductFilters({ value, onChange, hideCategory, hideBrand }: Pro
   const update = (patch: Partial<ProductFiltersType>) => onChange({ ...value, ...patch });
 
   const hasActiveFilters =
-    !!value.search || !!value.category || !!value.brand || !!value.min_price || !!value.max_price || !!value.sort;
+    !!value.search ||
+    !!value.category ||
+    !!value.brand ||
+    !!value.tag ||
+    !!value.min_price ||
+    !!value.max_price ||
+    !!value.sort;
 
   return (
     <div className="space-y-5">
@@ -114,6 +123,25 @@ export function ProductFilters({ value, onChange, hideCategory, hideBrand }: Pro
               {brands.map((b) => (
                 <SelectItem key={b.id} value={b.slug}>
                   {b.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {!hideTag && tags && tags.length > 0 && (
+        <div className="space-y-1.5">
+          <Label>Tag</Label>
+          <Select value={value.tag ?? "all"} onValueChange={(v) => update({ tag: !v || v === "all" ? undefined : v })}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All tags</SelectItem>
+              {tags.map((t) => (
+                <SelectItem key={t.id} value={t.slug}>
+                  {t.name}
                 </SelectItem>
               ))}
             </SelectContent>

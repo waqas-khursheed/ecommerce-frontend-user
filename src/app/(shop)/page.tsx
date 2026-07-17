@@ -2,6 +2,7 @@ import { homeService } from "@/services/home.service";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { TrustBadges } from "@/components/home/TrustBadges";
 import { CategoryGrid } from "@/components/home/CategoryGrid";
+import { TagStrip } from "@/components/home/TagStrip";
 import { ProductSection } from "@/components/home/ProductSection";
 import { BrandStrip } from "@/components/home/BrandStrip";
 import { PromoBanners } from "@/components/home/PromoBanners";
@@ -24,6 +25,13 @@ export default async function HomePage() {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold sm:text-xl">Shop by Category</h2>
           <CategoryGrid categories={home.categories} />
+        </section>
+      )}
+
+      {home.tags.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold sm:text-xl">Shop by Tag</h2>
+          <TagStrip tags={home.tags} />
         </section>
       )}
 

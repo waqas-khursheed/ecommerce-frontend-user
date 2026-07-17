@@ -18,8 +18,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: APP_NAME,
-  description: "TODO: replace with real store description for SEO.",
+  title: {
+    default: `${APP_NAME} — Online Shopping for Fashion, Electronics & More`,
+    template: `%s | ${APP_NAME}`,
+  },
+  description:
+    "Shop the latest fashion, electronics, home essentials and more at great prices, with fast delivery and easy cash-on-delivery checkout.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

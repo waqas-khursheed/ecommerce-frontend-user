@@ -15,17 +15,12 @@ export const billingSchema = z.object({
   state: z.string().trim().min(1, "State is required").max(50),
 });
 
-// Mirrors backed/src/modules/orders/validations/checkout.validation.js checkoutSchema
+// Mirrors backed/src/modules/orders/validations/checkout.validation.js checkoutSchema.
+// Card payment is disabled for now — cash on delivery only.
 export const checkoutSchema = z.object({
-  pay_method: z.enum(["cod", "card"]),
+  pay_method: z.literal("cod"),
   billing: billingSchema,
   coupon_code: z.string().trim().optional().or(z.literal("")),
-  card_no: z
-    .string()
-    .trim()
-    .regex(/^\d*$/, "Card number must be digits only")
-    .optional()
-    .or(z.literal("")),
   use_reward: z.boolean().optional(),
 });
 

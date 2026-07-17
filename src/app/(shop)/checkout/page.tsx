@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,11 +8,12 @@ import { toast } from "sonner";
 import { checkoutSchema, type CheckoutInput } from "@/schemas/checkout.schema";
 import { useCart, useClearCart } from "@/hooks/useCart";
 import { useApplyCoupon } from "@/hooks/useCoupon";
+import { useAddress } from "@/hooks/useAddress";
 import { useRewardBalance, useRewardSettings } from "@/hooks/useReward";
 import { useAuthStore } from "@/store/auth.store";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { orderService } from "@/services/order.service";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ export default function CheckoutPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: rewardSettings } = useRewardSettings();
   const { data: rewardBalance } = useRewardBalance();
+  const { data: savedAddress } = useAddress();
   const applyCoupon = useApplyCoupon();
 
   const [couponCode, setCouponCode] = useState("");
@@ -43,8 +45,14 @@ export default function CheckoutPage() {
     defaultValues: { pay_method: "cod", use_reward: false },
   });
 
-  const payMethod = watch("pay_method");
   const useReward = watch("use_reward");
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to checkout");
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [isAuthenticated, router]);
 
   const subTotal = cart?.subTotal ?? 0;
   const couponDiscount = applyCoupon.data?.discountAmount ?? 0;
@@ -53,6 +61,16 @@ export default function CheckoutPage() {
   const canUseRewards = isAuthenticated && (rewardBalance?.rewards ?? 0) >= minRedeemPoints;
 
   const estimatedTotal = useMemo(() => Math.max(subTotal - couponDiscount, 0), [subTotal, couponDiscount]);
+
+  const handleUseSavedAddress = () => {
+    if (!savedAddress) return;
+    setValue("billing.address_1", savedAddress.address1);
+    setValue("billing.city", savedAddress.city1?.name ?? "");
+    setValue("billing.state", savedAddress.state1?.name ?? "");
+    setValue("billing.country", savedAddress.country1?.country_name ?? "");
+    setValue("billing.postcode", savedAddress.code1);
+    toast.success("Address filled in");
+  };
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -70,7 +88,6 @@ export default function CheckoutPage() {
       const payload = {
         ...values,
         coupon_code: values.coupon_code || undefined,
-        card_no: values.pay_method === "card" && values.card_no ? Number(values.card_no) : undefined,
       };
       const order = await orderService.checkout(payload);
       await clearCart.mutateAsync();
@@ -81,7 +98,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isCartLoading) return <Loader />;
+  if (!isAuthenticated || isCartLoading) return <Loader />;
 
   if (!cart || cart.items.length === 0) {
     return (
@@ -98,7 +115,14 @@ export default function CheckoutPage() {
       <div className="grid gap-6 sm:grid-cols-[1fr_320px]">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <h2 className="text-sm font-semibold">Shipping details</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Shipping details</h2>
+              {savedAddress && (
+                <Button type="button" variant="outline" size="sm" onClick={handleUseSavedAddress}>
+                  Use saved address
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="billing.firstname">First name</Label>
@@ -162,26 +186,8 @@ export default function CheckoutPage() {
 
           <div className="space-y-3">
             <h2 className="text-sm font-semibold">Payment method</h2>
-            <div className="flex gap-3">
-              {(["cod", "card"] as const).map((method) => (
-                <label
-                  key={method}
-                  className={cn(
-                    "flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm",
-                    payMethod === method ? "border-foreground" : "border-input"
-                  )}
-                >
-                  <input type="radio" value={method} className="accent-foreground" {...register("pay_method")} />
-                  {method === "cod" ? "Cash on delivery" : "Card"}
-                </label>
-              ))}
-            </div>
-            {payMethod === "card" && (
-              <div className="space-y-1.5">
-                <Label htmlFor="card_no">Card number</Label>
-                <Input id="card_no" inputMode="numeric" {...register("card_no")} />
-              </div>
-            )}
+            <div className="rounded-lg border px-3 py-2.5 text-sm">Cash on delivery</div>
+            <input type="hidden" value="cod" {...register("pay_method")} />
           </div>
 
           {canUseRewards && (

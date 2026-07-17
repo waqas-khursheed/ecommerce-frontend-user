@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, Search, ShoppingCart, User } from "lucide-react";
+import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -12,12 +12,14 @@ import { useUiStore } from "@/store/ui.store";
 import { useCart } from "@/hooks/useCart";
 import { useAuthStore } from "@/store/auth.store";
 import type { ProductCategory } from "@/types/product";
+import type { ProductTag } from "@/types/tag";
 
 interface NavbarProps {
   categories: ProductCategory[];
+  tags: ProductTag[];
 }
 
-export function Navbar({ categories }: NavbarProps) {
+export function Navbar({ categories, tags }: NavbarProps) {
   const router = useRouter();
   const isMobileMenuOpen = useUiStore((state) => state.isMobileMenuOpen);
   const setMobileMenuOpen = useUiStore((state) => state.setMobileMenuOpen);
@@ -26,14 +28,58 @@ export function Navbar({ categories }: NavbarProps) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const itemCount = cart?.items.length ?? 0;
   const [search, setSearch] = useState("");
+  const [isMobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const topCategories = categories.slice(0, 6);
+  // Nav space is tight, so only the top couple of promotional tags (e.g.
+  // "Summer Sale 2026") get their own link — styled distinctly from category
+  // links so they read as a promo, not just another category.
+  const topTags = tags.slice(0, 2);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     const query = search.trim();
+    setMobileSearchOpen(false);
     router.push(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
   };
+
+  // Tapping the search icon on a narrow screen swaps the whole header row
+  // for a full-width search field (rather than the old behaviour of just
+  // navigating to /products with no way to type a query first) — same
+  // <form onSubmit={handleSearch}> as the desktop bar below, just laid out
+  // for a small screen.
+  if (isMobileSearchOpen) {
+    return (
+      <header className="sticky top-0 z-40 border-b bg-background">
+        <form onSubmit={handleSearch} className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:h-16">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-11 shrink-0"
+            onClick={() => setMobileSearchOpen(false)}
+            aria-label="Close search"
+          >
+            <X />
+          </Button>
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              autoFocus
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-11 pl-9"
+            />
+          </div>
+          <Button type="submit" size="icon" className="size-11 shrink-0" aria-label="Submit search">
+            <Search />
+          </Button>
+        </form>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
@@ -65,11 +111,22 @@ export function Navbar({ categories }: NavbarProps) {
               {category.title}
             </Link>
           ))}
+          {topTags.map((tag) => (
+            <Link key={tag.id} href={`/tag/${tag.slug}`} className="text-sm font-semibold text-primary hover:underline">
+              {tag.name}
+            </Link>
+          ))}
         </nav>
 
         <form onSubmit={handleSearch} className="ml-auto hidden max-w-sm flex-1 sm:flex">
           <div className="relative w-full">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <button
+              type="submit"
+              aria-label="Submit search"
+              className="absolute left-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Search className="size-4" />
+            </button>
             <Input
               type="search"
               placeholder="Search products..."
@@ -82,11 +139,12 @@ export function Navbar({ categories }: NavbarProps) {
 
         <div className="ml-auto flex items-center gap-1 sm:ml-0">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             className="size-11 sm:hidden"
             aria-label="Search"
-            render={<Link href="/products" />}
+            onClick={() => setMobileSearchOpen(true)}
           >
             <Search />
           </Button>
@@ -121,18 +179,6 @@ export function Navbar({ categories }: NavbarProps) {
           <SheetHeader>
             <SheetTitle>{APP_NAME}</SheetTitle>
           </SheetHeader>
-          <form onSubmit={handleSearch} className="px-4">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search products..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-11 pl-9"
-              />
-            </div>
-          </form>
           <nav className="flex flex-col gap-1 px-2">
             <SheetClose
               render={
@@ -150,6 +196,19 @@ export function Navbar({ categories }: NavbarProps) {
                     className="rounded-md px-3 py-3 text-sm font-medium hover:bg-muted"
                   >
                     {category.title}
+                  </Link>
+                }
+              />
+            ))}
+            {topTags.map((tag) => (
+              <SheetClose
+                key={tag.id}
+                render={
+                  <Link
+                    href={`/tag/${tag.slug}`}
+                    className="rounded-md px-3 py-3 text-sm font-semibold text-primary hover:bg-muted"
+                  >
+                    {tag.name}
                   </Link>
                 }
               />

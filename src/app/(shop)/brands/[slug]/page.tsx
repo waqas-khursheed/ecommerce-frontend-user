@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { brandService } from "@/services/brand.service";
@@ -9,6 +10,17 @@ export const revalidate = 300;
 export async function generateStaticParams() {
   const brands = await brandService.list().catch(() => []);
   return brands.map((brand) => ({ slug: brand.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const brand = await brandService.getBySlug(slug).catch(() => null);
+  if (!brand) return { title: "Brand not found" };
+
+  return {
+    title: brand.title,
+    description: brand.description || `Shop official ${brand.title} products.`,
+  };
 }
 
 export default async function BrandPage({ params }: { params: Promise<{ slug: string }> }) {

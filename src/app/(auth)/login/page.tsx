@@ -1,7 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -13,8 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
   const login = useLogin();
 
   const {
@@ -26,7 +29,7 @@ export default function LoginPage() {
   const onSubmit = async (values: LoginInput) => {
     try {
       await login.mutateAsync(values);
-      router.push("/");
+      router.push(redirect);
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Login failed"));
     }
@@ -64,11 +67,22 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Link
+            href={redirect !== "/" ? `/register?redirect=${encodeURIComponent(redirect)}` : "/register"}
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
             Register
           </Link>
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -37,6 +37,7 @@ export function ProductListing({ baseFilters = {}, initialFilters = {} }: Produc
         }}
         hideCategory={"category" in baseFilters}
         hideBrand={"brand" in baseFilters}
+        hideTag={"tag" in baseFilters}
       />
 
       <div className="space-y-6">

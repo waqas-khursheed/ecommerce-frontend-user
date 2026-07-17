@@ -1,26 +1,32 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { uploadUrl } from "@/lib/http";
 import { formatPrice } from "@/lib/utils";
-import { useOrderDetail } from "@/hooks/useOrders";
+import { useCancelOrder, useOrderDetail } from "@/hooks/useOrders";
+import { ORDER_STATUS_LABELS, CANCELLABLE_ORDER_STATUS } from "@/types/order";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
-
-const STATUS_LABEL: Record<number, string> = {
-  0: "Pending",
-  1: "Processing",
-  2: "Shipped",
-  3: "Delivered",
-  4: "Cancelled",
-};
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { data: order, isLoading } = useOrderDetail(Number(id));
+  const cancelOrder = useCancelOrder();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (isLoading) return <Loader />;
 
@@ -29,6 +35,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   const billing = order.billingDetails?.[0];
+  const canCancel = order.status === CANCELLABLE_ORDER_STATUS;
+
+  const handleCancel = async () => {
+    await cancelOrder.mutateAsync(order.id);
+    setConfirmOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -37,7 +49,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <h2 className="text-lg font-semibold">Order #{order.order_number}</h2>
           <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
         </div>
-        <Badge variant="secondary">{STATUS_LABEL[order.status] ?? "Unknown"}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">{ORDER_STATUS_LABELS[order.status] ?? "Unknown"}</Badge>
+          {canCancel && (
+            <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <DialogTrigger render={<Button variant="outline" size="sm">Cancel order</Button>} />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Cancel this order?</DialogTitle>
+                  <DialogDescription>
+                    This can&apos;t be undone. Your items will be released back into stock.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose render={<Button variant="outline">Keep order</Button>} />
+                  <Button variant="destructive" disabled={cancelOrder.isPending} onClick={handleCancel}>
+                    {cancelOrder.isPending ? "Cancelling..." : "Yes, cancel it"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="rounded-lg border divide-y">
@@ -97,12 +130,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Coupon {order.coupon_title ? `(${order.coupon_title})` : ""}</dt>
                 <dd>-{formatPrice(order.coupon_discount)}</dd>
-              </div>
-            )}
-            {!!order.card_discount && (
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Card discount</dt>
-                <dd>-{formatPrice(order.card_discount)}</dd>
               </div>
             )}
             {!!order.rewards_discount && (

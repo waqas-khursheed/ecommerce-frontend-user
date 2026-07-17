@@ -5,18 +5,11 @@ import Link from "next/link";
 import { PackageOpen } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/lib/utils";
+import { ORDER_STATUS_LABELS } from "@/types/order";
 import { Badge } from "@/components/ui/badge";
 import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Pagination } from "@/components/shared/Pagination";
-
-const STATUS_LABEL: Record<number, string> = {
-  0: "Pending",
-  1: "Processing",
-  2: "Shipped",
-  3: "Delivered",
-  4: "Cancelled",
-};
 
 export default function OrdersPage() {
   const [page, setPage] = useState(1);
@@ -50,7 +43,7 @@ export default function OrdersPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Badge variant="secondary">{STATUS_LABEL[order.status] ?? "Unknown"}</Badge>
+              <Badge variant="secondary">{ORDER_STATUS_LABELS[order.status] ?? "Unknown"}</Badge>
               <span className="font-semibold">{formatPrice(order.grand_total)}</span>
             </div>
           </Link>

@@ -1,11 +1,34 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { productService } from "@/services/product.service";
+import { uploadUrl } from "@/lib/http";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { ProductSection } from "@/components/home/ProductSection";
+import { Badge } from "@/components/ui/badge";
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await productService.getBySlug(slug).catch(() => null);
+  if (!product) return { title: "Product not found" };
+
+  const description = product.short_desc || product.meta_description || `Buy ${product.title} online at the best price.`;
+  const image = uploadUrl("products", product.featured_image);
+
+  return {
+    title: product.title,
+    description,
+    openGraph: {
+      title: product.title,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+  };
+}
 
 // Pre-render the top 50 best-sellers at build time; every other product is
 // still served (and then cached) via on-demand ISR the first time it's hit.
@@ -37,6 +60,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           {product.short_desc && <p className="text-sm text-muted-foreground">{product.short_desc}</p>}
 
           <ProductPurchasePanel product={product} />
+
+          {!!product.assignTagToProducts?.length && (
+            <div className="flex flex-wrap gap-1.5">
+              {product.assignTagToProducts.map((assignment) => (
+                <Link key={assignment.id} href={`/tag/${assignment.tag.slug}`}>
+                  <Badge variant="secondary" className="hover:bg-secondary/80">
+                    {assignment.tag.name}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
 
           {product.sku && <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>}
         </div>

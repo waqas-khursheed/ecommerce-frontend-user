@@ -10,6 +10,6 @@ export { reviewService } from "@/services/review.service";
 export { wishlistService } from "@/services/wishlist.service";
 export { couponService } from "@/services/coupon.service";
 export { rewardService } from "@/services/reward.service";
-export { paymentService } from "@/services/payment.service";
 export { cmsService } from "@/services/cms.service";
 export { exchangeService } from "@/services/exchange.service";
+export { tagService } from "@/services/tag.service";

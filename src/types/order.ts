@@ -33,13 +33,13 @@ export interface BillingDetails {
   state: string;
 }
 
-export type PayMethod = "cod" | "card";
+// Card payment is disabled for now — cash on delivery only.
+export type PayMethod = "cod";
 
 export interface CheckoutPayload {
   pay_method: PayMethod;
   billing: BillingDetails;
   coupon_code?: string;
-  card_no?: number;
   use_reward?: boolean;
   delivery_day?: string;
   delivery_start_time?: string;
@@ -72,7 +72,6 @@ export interface Order {
   sub_total: number;
   coupon_discount: number | null;
   coupon_title: string | null;
-  card_discount: number | null;
   rewards_discount: number;
   grand_total: number;
   payment_status: PaymentStatus;
@@ -87,3 +86,21 @@ export interface OrderListMeta {
   limit: number;
   totalPages: number;
 }
+
+// Mirrors frontend_admin/src/types/order.ts ORDER_STATUS_LABELS — the single
+// source of truth for what each Order.status number means (backend only
+// validates it's an integer 0-9, the labels are a frontend convention).
+export const ORDER_STATUS_LABELS: Record<number, string> = {
+  0: "Pending",
+  1: "Processing",
+  2: "Shipped",
+  3: "Delivered",
+  4: "Completed",
+  5: "Cancelled",
+  6: "Returned",
+  7: "Refunded",
+  8: "Failed",
+  9: "On Hold",
+};
+
+export const CANCELLABLE_ORDER_STATUS = 0;

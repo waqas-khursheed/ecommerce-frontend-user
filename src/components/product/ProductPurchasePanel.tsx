@@ -53,14 +53,21 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   );
 
   const isWishlisted = wishlist?.some((w) => w.product_id === product.id) ?? false;
-  const allVariantsSelected = variantGroups.every((g) => selected[g.key] !== undefined);
 
-  const matchingStock = allVariantsSelected
+  // `variantGroups.every(...)` is vacuously true on an empty array, so
+  // without the `.length > 0` guard a plain non-variant product (no groups
+  // at all) would count as "fully selected" and go looking for a matching
+  // Stock row that was never meant to exist for it.
+  const hasVariants = variantGroups.length > 0;
+  const allVariantsSelected = hasVariants && variantGroups.every((g) => selected[g.key] !== undefined);
+
+  const matchingStock = hasVariants && allVariantsSelected
     ? product.stocks?.find((s) => variantGroups.every((g) => s[g.key] === selected[g.key]))
     : undefined;
 
   const price = matchingStock?.stock_dis_price || matchingStock?.stock_price || product.d_price || product.price;
   const compareAtPrice = matchingStock?.stock_price ?? product.price;
+  const lineTotal = price * quantity;
   const canAddToCart = !product.is_variation || (allVariantsSelected && !!matchingStock);
   const outOfStock = matchingStock ? matchingStock.stock_qty === 0 : product.quantity === 0;
 
@@ -114,7 +121,7 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
       {product.is_variation === 1 && !allVariantsSelected && (
         <p className="text-xs text-muted-foreground">Select {variantGroups.map((g) => g.label).join(", ")} to continue.</p>
       )}
-      {allVariantsSelected && !matchingStock && (
+      {product.is_variation === 1 && allVariantsSelected && !matchingStock && (
         <p className="text-xs text-destructive">That combination isn&apos;t available.</p>
       )}
       {outOfStock && <p className="text-xs text-destructive">Out of stock.</p>}
@@ -142,6 +149,12 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
           </Button>
         </div>
 
+        <span className="text-sm text-muted-foreground">
+          Total: <span className="font-semibold text-foreground">{formatPrice(lineTotal)}</span>
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3">
         <Button className="h-11 flex-1" disabled={!canAddToCart || outOfStock || addToCart.isPending} onClick={handleAddToCart}>
           {addToCart.isPending ? "Adding..." : "Add to Cart"}
         </Button>

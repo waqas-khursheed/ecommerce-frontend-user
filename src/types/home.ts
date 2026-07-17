@@ -1,4 +1,5 @@
 import type { Product, ProductBrand, ProductCategory } from "@/types/product";
+import type { ProductTag } from "@/types/tag";
 
 export interface Slide {
   id: number;
@@ -34,4 +35,5 @@ export interface HomeContent {
   onSale: Product[];
   categories: ProductCategory[];
   brands: ProductBrand[];
+  tags: ProductTag[];
 }

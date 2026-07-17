@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,6 +14,17 @@ export async function generateStaticParams() {
     { slug: category.slug },
     ...(category.children ?? []).map((child) => ({ slug: child.slug })),
   ]);
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const category = await categoryService.getBySlug(slug).catch(() => null);
+  if (!category) return { title: "Category not found" };
+
+  return {
+    title: category.title,
+    description: category.description || `Shop the best ${category.title.toLowerCase()} at great prices.`,
+  };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -25,4 +25,9 @@ export const orderService = {
     const { data } = await http.get<ApiSuccessResponse<Order>>(`/orders/${id}`);
     return data.data;
   },
+
+  async cancel(id: number): Promise<Order> {
+    const { data } = await http.patch<ApiSuccessResponse<Order>>(`/orders/${id}/cancel`);
+    return data.data;
+  },
 };

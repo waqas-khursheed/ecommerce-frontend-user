@@ -9,6 +9,7 @@ import { Loader } from "@/components/shared/Loader";
 
 const NAV = [
   { label: "Profile", href: "/account" },
+  { label: "Addresses", href: "/account/addresses" },
   { label: "Orders", href: "/account/orders" },
   { label: "Wishlist", href: "/account/wishlist" },
   { label: "Exchanges", href: "/account/exchanges" },

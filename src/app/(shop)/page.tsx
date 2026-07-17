@@ -1,29 +1,51 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ProductGrid } from "@/components/product/ProductGrid";
-import { MOCK_PRODUCTS } from "@/lib/mock-data";
+import { homeService } from "@/services/home.service";
+import { HeroSlider } from "@/components/home/HeroSlider";
+import { TrustBadges } from "@/components/home/TrustBadges";
+import { CategoryGrid } from "@/components/home/CategoryGrid";
+import { ProductSection } from "@/components/home/ProductSection";
+import { BrandStrip } from "@/components/home/BrandStrip";
+import { PromoBanners } from "@/components/home/PromoBanners";
+import { NewsletterForm } from "@/components/shared/NewsletterForm";
 
-// TODO: replace MOCK_PRODUCTS with productService.list({ limit: 10 }) once
-// the backend is reachable — keep this a server component so the fetch
-// benefits from ISR below.
+// Homepage content rarely changes minute-to-minute — ISR keeps it fast
+// without hitting the API on every request.
 export const revalidate = 60;
 
-export default function HomePage() {
-  const products = MOCK_PRODUCTS;
+export default async function HomePage() {
+  const home = await homeService.get();
 
   return (
-    <div className="mx-auto max-w-7xl space-y-10 px-4 py-8">
-      <section className="rounded-lg bg-muted/50 p-8 text-center sm:p-16">
-        <h1 className="text-2xl font-bold sm:text-4xl">TODO: Hero banner</h1>
-        <p className="mt-2 text-muted-foreground">Replace this with real homepage content.</p>
-        <Button render={<Link href="/products" />} className="mt-4 h-11">
-          Shop now
-        </Button>
-      </section>
+    <div className="mx-auto max-w-7xl space-y-12 px-4 py-6 sm:space-y-16 sm:py-10">
+      <HeroSlider slides={home.slides} />
 
-      <section>
-        <h2 className="mb-4 text-lg font-semibold sm:text-xl">Featured products</h2>
-        <ProductGrid products={products} />
+      <TrustBadges />
+
+      {home.categories.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold sm:text-xl">Shop by Category</h2>
+          <CategoryGrid categories={home.categories} />
+        </section>
+      )}
+
+      <ProductSection title="New Arrivals" viewAllHref="/products?new_arrival=1" products={home.newArrivals} />
+
+      <PromoBanners banners={home.homeBanners} />
+
+      <ProductSection title="Best Sellers" viewAllHref="/products?best_seller=1" products={home.bestSellers} />
+
+      <ProductSection title="On Sale" viewAllHref="/products?sale=1" products={home.onSale} />
+
+      {home.brands.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold sm:text-xl">Our Brands</h2>
+          <BrandStrip brands={home.brands} />
+        </section>
+      )}
+
+      <section className="rounded-lg bg-muted/50 p-8 text-center sm:p-12">
+        <h2 className="text-lg font-semibold sm:text-xl">Get 10% off your first order</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Subscribe for new arrivals, sales and exclusive offers.</p>
+        <NewsletterForm className="mx-auto mt-4 max-w-sm" />
       </section>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -25,6 +25,30 @@ export function useProfile() {
     queryFn: () => authService.getProfile(),
     enabled: isAuthenticated,
   });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  const setUser = useAuthStore((state) => state.setUser);
+  return useMutation({
+    mutationFn: authService.updateProfile,
+    onSuccess: (user) => {
+      setUser(user);
+      queryClient.invalidateQueries({ queryKey: ["auth", "profile"] });
+    },
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({ mutationFn: authService.changePassword });
+}
+
+export function useForgotPassword() {
+  return useMutation({ mutationFn: authService.forgotPassword });
+}
+
+export function useResetPassword() {
+  return useMutation({ mutationFn: authService.resetPassword });
 }
 
 export function useLogout() {

@@ -4,16 +4,25 @@ import { useRouter } from "next/navigation";
 import { CartItem } from "@/components/cart/CartItem";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { useCartStore } from "@/store/cart.store";
+import { Loader } from "@/components/shared/Loader";
+import { useCart, useRemoveCartItem, useUpdateCartItem } from "@/hooks/useCart";
 
 // Client-rendered — cart contents are per-user/session data, never cached.
 export default function CartPage() {
   const router = useRouter();
-  const items = useCartStore((state) => state.items);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
+  const { data: cart, isLoading } = useCart();
+  const updateQuantity = useUpdateCartItem();
+  const removeItem = useRemoveCartItem();
 
-  const subTotal = items.reduce((sum, item) => sum + (item.product.d_price || item.product.price) * item.quantity, 0);
+  const items = cart?.items ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <Loader />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -31,15 +40,16 @@ export default function CartPage() {
         <div className="divide-y rounded-lg border px-4">
           {items.map((item) => (
             <CartItem
-              key={item.product.id}
+              key={item.id}
               item={item}
-              onQuantityChange={(qty) => updateQuantity(item.product.id, qty)}
-              onRemove={() => removeItem(item.product.id)}
+              isUpdating={updateQuantity.isPending}
+              onQuantityChange={(qty) => updateQuantity.mutate({ id: item.id, quantity: qty })}
+              onRemove={() => removeItem.mutate(item.id)}
             />
           ))}
         </div>
 
-        <CartSummary subTotal={subTotal} onCheckout={() => router.push("/checkout")} />
+        <CartSummary subTotal={cart?.subTotal ?? 0} onCheckout={() => router.push("/checkout")} />
       </div>
     </div>
   );

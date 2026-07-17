@@ -1,14 +1,25 @@
 import type { Product } from "@/types/product";
 
 export interface CartItem {
-  product: Product;
+  id: number;
+  product_id: number;
+  stock_id: number | null;
+  size_id: number | null;
+  fitting_id: number | null;
+  composite_attribute_key: number;
   quantity: number;
-  color_id?: number | null;
-  size_id?: number | null;
-  fitting_id?: number | null;
+  unitPrice: number;
+  lineTotal: number;
+  product: Product;
+}
+
+export interface Cart {
+  items: CartItem[];
+  subTotal: number;
 }
 
 export interface BillingDetails {
+  id?: number;
   firstname: string;
   lastname?: string;
   email?: string;
@@ -28,14 +39,22 @@ export interface CheckoutPayload {
   pay_method: PayMethod;
   billing: BillingDetails;
   coupon_code?: string;
+  card_no?: number;
   use_reward?: boolean;
+  delivery_day?: string;
+  delivery_start_time?: string;
+  delivery_end_time?: string;
 }
 
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
 export interface OrderDetail {
   id: number;
+  order_id: number;
   product_id: number;
+  color_id: number | null;
+  size_id: number | null;
+  fitting_id: number | null;
   quantity: number;
   price: number;
   dis_price: number;
@@ -43,8 +62,7 @@ export interface OrderDetail {
   product?: Pick<Product, "id" | "title" | "slug" | "featured_image">;
 }
 
-// TODO: confirm final shape against backed/src/modules/orders (user-facing
-// order endpoints) once integration starts.
+// Mirrors backed/src/modules/orders/repositories/user.order.repository.js.
 export interface Order {
   id: number;
   order_number: string;
@@ -52,8 +70,20 @@ export interface Order {
   pay_method: string;
   shipping: number;
   sub_total: number;
+  coupon_discount: number | null;
+  coupon_title: string | null;
+  card_discount: number | null;
+  rewards_discount: number;
   grand_total: number;
   payment_status: PaymentStatus;
   created_at: string;
   orderDetails?: OrderDetail[];
+  billingDetails?: BillingDetails[];
+}
+
+export interface OrderListMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

@@ -1,16 +1,17 @@
 import { http } from "@/lib/http";
 import { getDeviceId } from "@/lib/device-id";
 import type { ApiSuccessResponse } from "@/types/api";
-import type { CartItem } from "@/types/order";
+import type { Cart, CartItem } from "@/types/order";
 
-// Endpoints confirmed against backed/src/modules/carts/routes/cart.routes.js
+// Endpoints confirmed against backed/src/modules/carts/{routes,controllers,services}
 // (mounted at /api/cart). resolveCartOwner accepts either a Bearer token
-// (logged-in user) or an X-Device-Id header (guest) — sending both is safe.
+// (logged-in) or an X-Device-Id header (guest) — sending both is safe, and
+// the backend merges a guest cart into the account on login/register.
 const deviceHeaders = () => ({ "X-Device-Id": getDeviceId() });
 
 export const cartService = {
-  async list(): Promise<CartItem[]> {
-    const { data } = await http.get<ApiSuccessResponse<CartItem[]>>("/cart", {
+  async list(): Promise<Cart> {
+    const { data } = await http.get<ApiSuccessResponse<Cart>>("/cart", {
       headers: deviceHeaders(),
     });
     return data.data;

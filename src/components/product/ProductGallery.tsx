@@ -7,7 +7,8 @@ import { uploadUrl } from "@/lib/http";
 import type { Product } from "@/types/product";
 
 export function ProductGallery({ product }: { product: Product }) {
-  const images = [product.featured_image, product.hovered_image, ...product.gallery.map((g) => g.image)].filter(
+  const galleryImages = (product.productGalleries ?? []).map((g) => g.image);
+  const images = [product.featured_image, product.hovered_image, ...galleryImages].filter(
     (img): img is string => !!img
   );
   const [active, setActive] = useState(images[0]);

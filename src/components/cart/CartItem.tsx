@@ -9,9 +9,10 @@ interface CartItemProps {
   item: CartItemType;
   onQuantityChange: (quantity: number) => void;
   onRemove: () => void;
+  isUpdating?: boolean;
 }
 
-export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
+export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartItemProps) {
   const image = uploadUrl("products", item.product.featured_image);
 
   return (
@@ -27,6 +28,7 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               variant="outline"
               size="icon"
               className="size-8"
+              disabled={isUpdating}
               onClick={() => onQuantityChange(Math.max(1, item.quantity - 1))}
               aria-label="Decrease quantity"
             >
@@ -37,13 +39,14 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               variant="outline"
               size="icon"
               className="size-8"
+              disabled={isUpdating}
               onClick={() => onQuantityChange(item.quantity + 1)}
               aria-label="Increase quantity"
             >
               <Plus className="size-3.5" />
             </Button>
           </div>
-          <span className="text-sm font-semibold">{formatPrice((item.product.d_price || item.product.price) * item.quantity)}</span>
+          <span className="text-sm font-semibold">{formatPrice(item.lineTotal)}</span>
         </div>
       </div>
       <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={onRemove} aria-label="Remove item">

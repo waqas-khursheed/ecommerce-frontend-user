@@ -1,4 +1,15 @@
 export { authService } from "@/services/auth.service";
 export { productService } from "@/services/product.service";
+export { categoryService } from "@/services/category.service";
+export { brandService } from "@/services/brand.service";
+export { homeService } from "@/services/home.service";
+export { leadService } from "@/services/lead.service";
 export { cartService } from "@/services/cart.service";
 export { orderService } from "@/services/order.service";
+export { reviewService } from "@/services/review.service";
+export { wishlistService } from "@/services/wishlist.service";
+export { couponService } from "@/services/coupon.service";
+export { rewardService } from "@/services/reward.service";
+export { paymentService } from "@/services/payment.service";
+export { cmsService } from "@/services/cms.service";
+export { exchangeService } from "@/services/exchange.service";

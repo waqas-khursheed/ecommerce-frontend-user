@@ -1,17 +1,23 @@
 import { http } from "@/lib/http";
-import type { ApiSuccessResponse, PaginatedData } from "@/types/api";
-import type { CheckoutPayload, Order } from "@/types/order";
+import type { ApiSuccessResponse } from "@/types/api";
+import type { CheckoutPayload, Order, OrderListMeta } from "@/types/order";
 
-// Endpoints confirmed against backed/src/modules/orders/routes/checkout.routes.js
-// (mounted at /api — /checkout, /orders, /orders/:id).
+interface OrderListData {
+  orders: Order[];
+  meta: OrderListMeta;
+}
+
+// Endpoints + response shapes confirmed against
+// backed/src/modules/orders/{controllers,services}/checkout.* (mounted at
+// /api — /checkout, /orders, /orders/:id).
 export const orderService = {
   async checkout(payload: CheckoutPayload): Promise<Order> {
     const { data } = await http.post<ApiSuccessResponse<Order>>("/checkout", payload);
     return data.data;
   },
 
-  async listMyOrders(params?: { page?: number; limit?: number }): Promise<PaginatedData<Order>> {
-    const { data } = await http.get<ApiSuccessResponse<PaginatedData<Order>>>("/orders", { params });
+  async listMyOrders(params?: { page?: number; limit?: number }): Promise<OrderListData> {
+    const { data } = await http.get<ApiSuccessResponse<OrderListData>>("/orders", { params });
     return data.data;
   },
 

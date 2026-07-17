@@ -20,6 +20,12 @@ export const checkoutSchema = z.object({
   pay_method: z.enum(["cod", "card"]),
   billing: billingSchema,
   coupon_code: z.string().trim().optional().or(z.literal("")),
+  card_no: z
+    .string()
+    .trim()
+    .regex(/^\d*$/, "Card number must be digits only")
+    .optional()
+    .or(z.literal("")),
   use_reward: z.boolean().optional(),
 });
 

@@ -7,6 +7,7 @@ import { ProductSection } from "@/components/home/ProductSection";
 import { BrandStrip } from "@/components/home/BrandStrip";
 import { PromoBanners } from "@/components/home/PromoBanners";
 import { NewsletterForm } from "@/components/shared/NewsletterForm";
+import { RecentlyViewedSection } from "@/components/product/RecentlyViewedSection";
 
 // Homepage content rarely changes minute-to-minute — ISR keeps it fast
 // without hitting the API on every request.
@@ -20,6 +21,8 @@ export default async function HomePage() {
       <HeroSlider slides={home.slides} />
 
       <TrustBadges />
+
+      <RecentlyViewedSection />
 
       {home.categories.length > 0 && (
         <section className="space-y-4">

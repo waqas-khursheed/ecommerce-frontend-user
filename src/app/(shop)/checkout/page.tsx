@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Banknote, CheckCircle2 } from "lucide-react";
 import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
 
@@ -186,7 +187,16 @@ export default function CheckoutPage() {
 
           <div className="space-y-3">
             <h2 className="text-sm font-semibold">Payment method</h2>
-            <div className="rounded-lg border px-3 py-2.5 text-sm">Cash on delivery</div>
+            <div className="flex items-center justify-between rounded-lg border border-primary bg-primary/5 px-3 py-2.5 text-sm">
+              <span className="flex items-center gap-2">
+                <Banknote className="size-4" />
+                Cash on Delivery
+              </span>
+              <CheckCircle2 className="size-4 text-primary" />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Cash on Delivery is currently the only payment method available. Pay in cash when your order arrives.
+            </p>
             <input type="hidden" value="cod" {...register("pay_method")} />
           </div>
 

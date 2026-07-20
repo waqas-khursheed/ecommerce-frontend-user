@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { productService } from "@/services/product.service";
+import { getApiErrorMessage } from "@/lib/apiError";
 import type { ProductFilters } from "@/types/product";
 
 export const productKeys = {
@@ -35,5 +37,13 @@ export function useRelatedProducts(slug: string) {
     queryFn: () => productService.getRelated(slug),
     enabled: !!slug,
     staleTime: 60 * 1000,
+  });
+}
+
+export function useCreateStockAlert(slug: string) {
+  return useMutation({
+    mutationFn: (payload: { email: string; stock_id?: number }) => productService.notifyStock(slug, payload),
+    onSuccess: () => toast.success("We'll email you when this is back in stock"),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Couldn't set up that notification")),
   });
 }

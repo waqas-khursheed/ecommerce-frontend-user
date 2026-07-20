@@ -37,4 +37,12 @@ export const productService = {
     );
     return data.data;
   },
+
+  async notifyStock(slug: string, payload: { email: string; stock_id?: number }): Promise<{ subscribed: boolean }> {
+    const { data } = await http.post<ApiSuccessResponse<{ subscribed: boolean }>>(
+      `/products/${slug}/notify-stock`,
+      payload
+    );
+    return data.data;
+  },
 };

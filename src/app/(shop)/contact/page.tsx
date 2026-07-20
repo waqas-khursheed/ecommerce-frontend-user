@@ -11,7 +11,7 @@ export default async function ContactPage() {
       <div className="space-y-2">
         <h1 className="text-xl font-bold sm:text-2xl">{page?.title ?? "Contact Us"}</h1>
         {page?.content && (
-          <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: page.content }} />
+          <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert" dangerouslySetInnerHTML={{ __html: page.content }} />
         )}
       </div>
 

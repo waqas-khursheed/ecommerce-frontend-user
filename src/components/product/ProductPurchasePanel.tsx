@@ -1,15 +1,51 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Heart, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn, formatPrice } from "@/lib/utils";
 import { useAddToCart } from "@/hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "@/hooks/useWishlist";
+import { useCreateStockAlert } from "@/hooks/useProducts";
 import { useAuthStore } from "@/store/auth.store";
 import { groupVariantOptions, type VariantKey } from "@/lib/variants";
 import type { Product } from "@/types/product";
+
+const LOW_STOCK_THRESHOLD = 5;
+
+function StockAlertForm({ slug, stockId }: { slug: string; stockId?: number }) {
+  const authUser = useAuthStore((state) => state.user);
+  const [email, setEmail] = useState(authUser?.email ?? "");
+  const createStockAlert = useCreateStockAlert(slug);
+
+  if (createStockAlert.isSuccess) {
+    return <p className="text-sm text-muted-foreground">We&apos;ll email {email} when this is back in stock.</p>;
+  }
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    createStockAlert.mutate({ email: email.trim(), stock_id: stockId });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-2">
+      <Input
+        type="email"
+        required
+        placeholder="you@example.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="h-10"
+      />
+      <Button type="submit" variant="outline" className="h-10 shrink-0" disabled={createStockAlert.isPending}>
+        {createStockAlert.isPending ? "Saving..." : "Notify me"}
+      </Button>
+    </form>
+  );
+}
 
 export function ProductPurchasePanel({ product }: { product: Product }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -44,6 +80,14 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   const lineTotal = price * quantity;
   const canAddToCart = !product.is_variation || (allVariantsSelected && !!matchingStock);
   const outOfStock = matchingStock ? matchingStock.stock_qty === 0 : product.quantity === 0;
+  // Only offer "notify me" once we actually know which exact variant (or the
+  // whole product, if it has none) is the one that's out — not while the
+  // shopper still hasn't finished picking a combination.
+  const canShowStockAlert = outOfStock && (!product.is_variation || (allVariantsSelected && !!matchingStock));
+
+  // `stock_qty: null` means unlimited — no urgency messaging in that case.
+  const remainingQty = matchingStock ? matchingStock.stock_qty : product.is_variation ? null : product.quantity;
+  const showLowStock = remainingQty !== null && remainingQty > 0 && remainingQty <= LOW_STOCK_THRESHOLD;
 
   const handleAddToCart = () => {
     addToCart.mutate({
@@ -99,6 +143,10 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
         <p className="text-xs text-destructive">That combination isn&apos;t available.</p>
       )}
       {outOfStock && <p className="text-xs text-destructive">Out of stock.</p>}
+      {!outOfStock && showLowStock && (
+        <p className="text-xs font-medium text-destructive">Only {remainingQty} left in stock — order soon.</p>
+      )}
+      {canShowStockAlert && <StockAlertForm slug={product.slug} stockId={matchingStock?.id} />}
 
       <div className="flex items-center gap-3">
         <div className="flex items-center rounded-md border">

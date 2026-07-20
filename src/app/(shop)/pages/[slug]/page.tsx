@@ -21,7 +21,7 @@ export default async function CommonPagePage({ params }: { params: Promise<{ slu
           <Image src={image} alt={page.title} fill className="object-cover" />
         </div>
       )}
-      <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: page.content }} />
+      <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: page.content }} />
     </div>
   );
 }

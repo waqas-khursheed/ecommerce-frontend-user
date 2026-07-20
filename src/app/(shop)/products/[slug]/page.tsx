@@ -6,6 +6,8 @@ import { uploadUrl } from "@/lib/http";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
 import { ProductReviews } from "@/components/product/ProductReviews";
+import { RecordRecentlyViewed } from "@/components/product/RecordRecentlyViewed";
+import { RecentlyViewedSection } from "@/components/product/RecentlyViewedSection";
 import { ProductSection } from "@/components/home/ProductSection";
 import { Badge } from "@/components/ui/badge";
 
@@ -49,6 +51,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-4 py-8">
+      <RecordRecentlyViewed product={product} />
+
       <div className="grid gap-8 sm:grid-cols-2">
         <ProductGallery product={product} />
 
@@ -109,6 +113,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <ProductSection title="You may also like" viewAllHref="/products" products={related} />
         </div>
       )}
+
+      <RecentlyViewedSection excludeProductId={product.id} className="border-t pt-8" />
     </div>
   );
 }

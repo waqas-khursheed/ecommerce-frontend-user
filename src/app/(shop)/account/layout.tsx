@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
+import { getAuthToken } from "@/lib/auth-token";
 import { Loader } from "@/components/shared/Loader";
 
 const NAV = [
@@ -19,12 +20,27 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+
+  // `isAuthenticated` is persisted to localStorage independently of the auth
+  // cookie the actual API calls rely on (lib/auth-token.ts). If the cookie
+  // is missing/expired while that flag is still true (cookies cleared,
+  // stale session from a previous day, etc.), this layout would render as
+  // "logged in", the page would fire its authenticated requests, get a 401,
+  // and only then get force-logged-out by the response interceptor — a
+  // jarring mid-page redirect that looks like a random logout. Check the
+  // real token here too, before any request fires, and self-heal the stale
+  // flag so the next visit redirects cleanly from the start.
+  const hasValidSession = isAuthenticated && !!getAuthToken();
 
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+    if (!hasValidSession) {
+      if (isAuthenticated) logout();
+      router.replace("/login");
+    }
+  }, [hasValidSession, isAuthenticated, logout, router]);
 
-  if (!isAuthenticated) {
+  if (!hasValidSession) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8">
         <Loader />

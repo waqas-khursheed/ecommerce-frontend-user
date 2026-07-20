@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
 import { getAuthToken } from "@/lib/auth-token";
 import { useAuthStore } from "@/store/auth.store";
 import type { ApiErrorResponse } from "@/types/api";
@@ -37,8 +38,10 @@ http.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
+      const wasAuthenticated = useAuthStore.getState().isAuthenticated;
       useAuthStore.getState().logout();
       if (!window.location.pathname.startsWith("/login")) {
+        if (wasAuthenticated) toast.error("Your session has expired — please log in again");
         window.location.href = "/login";
       }
     }

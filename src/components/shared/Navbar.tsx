@@ -12,14 +12,12 @@ import { useUiStore } from "@/store/ui.store";
 import { useCart } from "@/hooks/useCart";
 import { useAuthStore } from "@/store/auth.store";
 import type { ProductCategory } from "@/types/product";
-import type { ProductTag } from "@/types/tag";
 
 interface NavbarProps {
   categories: ProductCategory[];
-  tags: ProductTag[];
 }
 
-export function Navbar({ categories, tags }: NavbarProps) {
+export function Navbar({ categories }: NavbarProps) {
   const router = useRouter();
   const isMobileMenuOpen = useUiStore((state) => state.isMobileMenuOpen);
   const setMobileMenuOpen = useUiStore((state) => state.setMobileMenuOpen);
@@ -31,10 +29,6 @@ export function Navbar({ categories, tags }: NavbarProps) {
   const [isMobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const topCategories = categories.slice(0, 6);
-  // Nav space is tight, so only the top couple of promotional tags (e.g.
-  // "Summer Sale 2026") get their own link — styled distinctly from category
-  // links so they read as a promo, not just another category.
-  const topTags = tags.slice(0, 2);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -109,11 +103,6 @@ export function Navbar({ categories, tags }: NavbarProps) {
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               {category.title}
-            </Link>
-          ))}
-          {topTags.map((tag) => (
-            <Link key={tag.id} href={`/tag/${tag.slug}`} className="text-sm font-semibold text-primary hover:underline">
-              {tag.name}
             </Link>
           ))}
         </nav>
@@ -196,19 +185,6 @@ export function Navbar({ categories, tags }: NavbarProps) {
                     className="rounded-md px-3 py-3 text-sm font-medium hover:bg-muted"
                   >
                     {category.title}
-                  </Link>
-                }
-              />
-            ))}
-            {topTags.map((tag) => (
-              <SheetClose
-                key={tag.id}
-                render={
-                  <Link
-                    href={`/tag/${tag.slug}`}
-                    className="rounded-md px-3 py-3 text-sm font-semibold text-primary hover:bg-muted"
-                  >
-                    {tag.name}
                   </Link>
                 }
               />

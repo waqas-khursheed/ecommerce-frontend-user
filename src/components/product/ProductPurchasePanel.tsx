@@ -8,34 +8,8 @@ import { cn, formatPrice } from "@/lib/utils";
 import { useAddToCart } from "@/hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "@/hooks/useWishlist";
 import { useAuthStore } from "@/store/auth.store";
-import type { Product, ProductAttributeAssignment } from "@/types/product";
-
-type VariantKey = "color_id" | "size_id" | "fitting_id";
-
-// Groups the flat assignAttrToProducts list into option groups by attribute
-// type (Color/Size/Fitting), matching the title-based convention already
-// used on the admin Stock page (there's no dedicated "attribute type" flag
-// on the backend — see frontend_admin/src/app/(admin)/stock/page.tsx).
-function groupVariantOptions(assignments: ProductAttributeAssignment[]) {
-  const groups = new Map<VariantKey, { key: VariantKey; label: string; items: ProductAttributeAssignment["attribute"][] }>();
-
-  for (const assignment of assignments) {
-    const title = assignment.attribute.attribute.attribute_title.toLowerCase();
-    const key: VariantKey | null = title.includes("colour") || title.includes("color")
-      ? "color_id"
-      : title.includes("size")
-        ? "size_id"
-        : title.includes("fit")
-          ? "fitting_id"
-          : null;
-    if (!key) continue;
-
-    if (!groups.has(key)) groups.set(key, { key, label: assignment.attribute.attribute.attribute_title, items: [] });
-    groups.get(key)!.items.push(assignment.attribute);
-  }
-
-  return Array.from(groups.values());
-}
+import { groupVariantOptions, type VariantKey } from "@/lib/variants";
+import type { Product } from "@/types/product";
 
 export function ProductPurchasePanel({ product }: { product: Product }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

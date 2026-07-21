@@ -54,7 +54,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <RecordRecentlyViewed product={product} />
 
       <div className="grid gap-8 sm:grid-cols-2">
-        <ProductGallery product={product} />
+        <ProductGallery product={product} enableZoom />
 
         <div className="space-y-4">
           <div>

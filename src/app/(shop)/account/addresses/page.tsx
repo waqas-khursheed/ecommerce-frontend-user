@@ -41,7 +41,9 @@ function LocationSelect({
         disabled={disabled}
       >
         <SelectTrigger className="w-full" aria-invalid={!!error}>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={placeholder}>
+            {(v: string) => options.find((opt) => String(opt.id) === v)?.label ?? v}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {options.map((opt) => (

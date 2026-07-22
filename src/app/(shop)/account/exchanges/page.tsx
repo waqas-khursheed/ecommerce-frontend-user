@@ -210,7 +210,12 @@ export default function ExchangesPage() {
                     }}
                   >
                     <SelectTrigger className="w-full" aria-invalid={!!errors.order_id}>
-                      <SelectValue placeholder="Select an order" />
+                      <SelectValue placeholder="Select an order">
+                        {(v: string) => {
+                          const order = eligibleOrders.find((o) => String(o.id) === v);
+                          return order ? `#${order.order_number} — ${ORDER_STATUS_LABELS[order.status]}` : v;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {eligibleOrders.map((order) => (
@@ -237,7 +242,14 @@ export default function ExchangesPage() {
                       onValueChange={(v) => field.onChange(Number(v))}
                     >
                       <SelectTrigger className="w-full" aria-invalid={!!errors.order_detail_id}>
-                        <SelectValue placeholder="Select an item from this order" />
+                        <SelectValue placeholder="Select an item from this order">
+                          {(v: string) => {
+                            const detail = selectedOrder.orderDetails?.find((d) => String(d.id) === v);
+                            return detail
+                              ? `${detail.product?.title ?? `Item #${detail.id}`} × ${detail.quantity}`
+                              : v;
+                          }}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {selectedOrder.orderDetails?.map((detail) => (

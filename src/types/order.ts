@@ -10,6 +10,9 @@ export interface CartItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  // null means untracked/unlimited stock — same convention used by
+  // Stock.stock_qty / Product.quantity on the backend.
+  remainingQty: number | null;
   product: Product;
 }
 

@@ -7,6 +7,7 @@ import { Eye, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { uploadUrl } from "@/lib/http";
 import { cn, formatPrice } from "@/lib/utils";
+import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "@/hooks/useWishlist";
 import { useAuthStore } from "@/store/auth.store";
 import { ProductQuickView } from "@/components/product/ProductQuickView";
@@ -15,7 +16,6 @@ import type { Product } from "@/types/product";
 // Only meaningful for non-variant products — the list endpoint doesn't
 // include per-variant Stock rows, so a variant product's real remaining
 // quantity for whichever combination a shopper wants isn't known here.
-const LOW_STOCK_THRESHOLD = 5;
 
 // Narrowed to just the fields this card actually renders (rather than the
 // full `Product`) so lightweight snapshots — e.g. RecentlyViewedItem — can
@@ -34,6 +34,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const [isQuickViewOpen, setQuickViewOpen] = useState(false);
 
   const isWishlisted = wishlist?.some((w) => w.product_id === product.id) ?? false;
+  // Variation products aren't covered here — the list endpoint doesn't
+  // include per-variant Stock rows, so whether *any* variant is still
+  // purchasable isn't knowable from this card's data.
+  const isOutOfStock = !product.is_variation && product.quantity === 0;
   const showLowStock =
     !product.is_variation && product.quantity > 0 && product.quantity <= LOW_STOCK_THRESHOLD;
 
@@ -62,7 +66,10 @@ export function ProductCard({ product }: { product: ProductCardData }) {
               alt={product.title}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-              className="object-cover transition-transform group-hover:scale-105"
+              className={cn(
+                "object-cover transition-transform group-hover:scale-105",
+                isOutOfStock && "opacity-60 grayscale-[30%]"
+              )}
             />
           )}
           <button
@@ -73,6 +80,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           >
             <Heart className={cn("size-4", isWishlisted && "fill-destructive text-destructive")} />
           </button>
+          {isOutOfStock && (
+            <span className="absolute left-2 top-2 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold text-background">
+              Out of Stock
+            </span>
+          )}
           {showLowStock && (
             <span className="absolute left-2 top-2 rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-white">
               Only {product.quantity} left

@@ -20,6 +20,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const logout = useAuthStore((state) => state.logout);
 
   // `isAuthenticated` is persisted to localStorage independently of the auth
@@ -31,16 +32,23 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
   // jarring mid-page redirect that looks like a random logout. Check the
   // real token here too, before any request fires, and self-heal the stale
   // flag so the next visit redirects cleanly from the start.
+  //
+  // `isAuthenticated` itself starts `false` on every page load until the
+  // persisted store finishes reading localStorage (`hasHydrated`) — treating
+  // that startup `false` the same as "logged out" was redirecting an
+  // already-logged-in user to /login on every refresh of any /account page.
   const hasValidSession = isAuthenticated && !!getAuthToken();
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!hasValidSession) {
       if (isAuthenticated) logout();
       router.replace("/login");
     }
-  }, [hasValidSession, isAuthenticated, logout, router]);
+  }, [hasHydrated, hasValidSession, isAuthenticated, logout, router]);
 
-  if (!hasValidSession) {
+  if (!hasHydrated || !hasValidSession) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8">
         <Loader />

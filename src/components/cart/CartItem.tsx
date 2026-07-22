@@ -14,6 +14,8 @@ interface CartItemProps {
 
 export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartItemProps) {
   const image = uploadUrl("products", item.product.featured_image);
+  const maxQuantity = item.remainingQty === null ? Infinity : item.remainingQty;
+  const atMax = item.quantity >= maxQuantity;
 
   return (
     <div className="flex gap-3 py-3">
@@ -39,8 +41,8 @@ export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartI
               variant="outline"
               size="icon"
               className="size-8"
-              disabled={isUpdating}
-              onClick={() => onQuantityChange(item.quantity + 1)}
+              disabled={isUpdating || atMax}
+              onClick={() => onQuantityChange(Math.min(maxQuantity, item.quantity + 1))}
               aria-label="Increase quantity"
             >
               <Plus className="size-3.5" />
@@ -48,6 +50,9 @@ export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartI
           </div>
           <span className="text-sm font-semibold">{formatPrice(item.lineTotal)}</span>
         </div>
+        {atMax && item.remainingQty !== null && item.remainingQty > 0 && (
+          <p className="text-xs text-muted-foreground">Maximum available quantity reached.</p>
+        )}
       </div>
       <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={onRemove} aria-label="Remove item">
         <Trash2 className="size-4 text-muted-foreground" />

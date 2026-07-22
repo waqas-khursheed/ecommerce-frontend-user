@@ -28,6 +28,7 @@ export default function CheckoutPage() {
   const { data: cart, isLoading: isCartLoading } = useCart();
   const clearCart = useClearCart();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const { data: rewardSettings } = useRewardSettings();
   const { data: rewardBalance } = useRewardBalance();
   const { data: savedAddress } = useAddress();
@@ -49,11 +50,17 @@ export default function CheckoutPage() {
   const useReward = watch("use_reward");
 
   useEffect(() => {
+    // Wait for the auth store to finish reading localStorage before acting
+    // on `isAuthenticated` — on a fresh page load/refresh it starts `false`
+    // regardless of the real session, so redirecting on it here would kick
+    // out an already-logged-in user on every checkout-page refresh.
+    if (!hasHydrated) return;
+
     if (!isAuthenticated) {
       toast.error("Please sign in to checkout");
       router.replace("/login?redirect=/checkout");
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
   const subTotal = cart?.subTotal ?? 0;
   const couponDiscount = applyCoupon.data?.discountAmount ?? 0;

@@ -1,19 +1,18 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Heart, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatPrice } from "@/lib/utils";
+import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import { useAddToCart } from "@/hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "@/hooks/useWishlist";
 import { useCreateStockAlert } from "@/hooks/useProducts";
 import { useAuthStore } from "@/store/auth.store";
 import { groupVariantOptions, type VariantKey } from "@/lib/variants";
 import type { Product } from "@/types/product";
-
-const LOW_STOCK_THRESHOLD = 5;
 
 function StockAlertForm({ slug, stockId }: { slug: string; stockId?: number }) {
   const authUser = useAuthStore((state) => state.user);
@@ -79,15 +78,34 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   const compareAtPrice = matchingStock?.stock_price ?? product.price;
   const lineTotal = price * quantity;
   const canAddToCart = !product.is_variation || (allVariantsSelected && !!matchingStock);
-  const outOfStock = matchingStock ? matchingStock.stock_qty === 0 : product.quantity === 0;
-  // Only offer "notify me" once we actually know which exact variant (or the
-  // whole product, if it has none) is the one that's out — not while the
-  // shopper still hasn't finished picking a combination.
-  const canShowStockAlert = outOfStock && (!product.is_variation || (allVariantsSelected && !!matchingStock));
 
-  // `stock_qty: null` means unlimited — no urgency messaging in that case.
+  // For a variation product, `product.quantity` is always 0 by DB convention
+  // (real stock lives per-variant in `stocks`) — treating that as "out of
+  // stock" before the shopper has even picked a variant showed a false
+  // "Out of stock." on every variant product's page load. Only the matched
+  // variant's own `stock_qty` can actually answer that question.
+  const outOfStock = product.is_variation
+    ? allVariantsSelected && !!matchingStock && matchingStock.stock_qty === 0
+    : product.quantity === 0;
+
+  // Only offer "notify me" once we actually know which exact variant (or the
+  // whole product, if it has none) is the one that's out — the `outOfStock`
+  // check above already implies that for variation products.
+  const canShowStockAlert = outOfStock;
+
+  // `stock_qty: null` means unlimited — no urgency messaging or quantity cap
+  // in that case, same as an untracked non-variant product's `quantity`.
   const remainingQty = matchingStock ? matchingStock.stock_qty : product.is_variation ? null : product.quantity;
   const showLowStock = remainingQty !== null && remainingQty > 0 && remainingQty <= LOW_STOCK_THRESHOLD;
+  const maxQuantity = remainingQty === null ? Infinity : remainingQty;
+
+  // Keeps the quantity stepper from ever holding more than what's actually in
+  // stock — most importantly when switching to a variant with less stock
+  // than the previously-selected one (e.g. 5 → 1), where the old quantity
+  // would otherwise silently stay above the new max until Add to Cart fails.
+  useEffect(() => {
+    setQuantity((q) => Math.max(1, Math.min(q, maxQuantity)));
+  }, [maxQuantity]);
 
   const handleAddToCart = () => {
     addToCart.mutate({
@@ -164,7 +182,8 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
             variant="ghost"
             size="icon"
             className="size-11"
-            onClick={() => setQuantity((q) => q + 1)}
+            onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+            disabled={quantity >= maxQuantity}
             aria-label="Increase quantity"
           >
             <Plus className="size-4" />
@@ -175,6 +194,10 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
           Total: <span className="font-semibold text-foreground">{formatPrice(lineTotal)}</span>
         </span>
       </div>
+
+      {remainingQty !== null && remainingQty > 0 && quantity >= remainingQty && (
+        <p className="text-xs text-muted-foreground">Maximum available quantity reached.</p>
+      )}
 
       <div className="flex items-center gap-3">
         <Button className="h-11 flex-1" disabled={!canAddToCart || outOfStock || addToCart.isPending} onClick={handleAddToCart}>

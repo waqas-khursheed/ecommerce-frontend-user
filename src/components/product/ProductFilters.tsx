@@ -77,7 +77,9 @@ export function ProductFilters({ value, onChange, hideCategory, hideBrand, hideT
           onValueChange={(v) => update({ sort: v as ProductFiltersType["sort"] })}
         >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>
+              {(v: string) => SORT_OPTIONS.find((opt) => opt.value === v)?.label ?? v}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {SORT_OPTIONS.map((opt) => (
@@ -97,7 +99,9 @@ export function ProductFilters({ value, onChange, hideCategory, hideBrand, hideT
             onValueChange={(v) => update({ category: !v || v === "all" ? undefined : v })}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue>
+                {(v: string) => (v === "all" ? "All categories" : categories.find((c) => c.slug === v)?.title ?? v)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All categories</SelectItem>
@@ -116,7 +120,9 @@ export function ProductFilters({ value, onChange, hideCategory, hideBrand, hideT
           <Label>Brand</Label>
           <Select value={value.brand ?? "all"} onValueChange={(v) => update({ brand: !v || v === "all" ? undefined : v })}>
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue>
+                {(v: string) => (v === "all" ? "All brands" : brands.find((b) => b.slug === v)?.title ?? v)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All brands</SelectItem>
@@ -135,7 +141,9 @@ export function ProductFilters({ value, onChange, hideCategory, hideBrand, hideT
           <Label>Tag</Label>
           <Select value={value.tag ?? "all"} onValueChange={(v) => update({ tag: !v || v === "all" ? undefined : v })}>
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue>
+                {(v: string) => (v === "all" ? "All tags" : tags.find((t) => t.slug === v)?.name ?? v)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All tags</SelectItem>

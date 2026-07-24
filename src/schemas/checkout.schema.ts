@@ -21,7 +21,6 @@ export const checkoutSchema = z.object({
   pay_method: z.literal("cod"),
   billing: billingSchema,
   coupon_code: z.string().trim().optional().or(z.literal("")),
-  use_reward: z.boolean().optional(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

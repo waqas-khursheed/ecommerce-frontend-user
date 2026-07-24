@@ -43,7 +43,6 @@ export interface CheckoutPayload {
   pay_method: PayMethod;
   billing: BillingDetails;
   coupon_code?: string;
-  use_reward?: boolean;
   delivery_day?: string;
   delivery_start_time?: string;
   delivery_end_time?: string;
@@ -75,7 +74,6 @@ export interface Order {
   sub_total: number;
   coupon_discount: number | null;
   coupon_title: string | null;
-  rewards_discount: number;
   grand_total: number;
   payment_status: PaymentStatus;
   created_at: string;

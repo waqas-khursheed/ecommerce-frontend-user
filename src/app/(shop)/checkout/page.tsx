@@ -9,7 +9,6 @@ import { checkoutSchema, type CheckoutInput } from "@/schemas/checkout.schema";
 import { useCart, useClearCart } from "@/hooks/useCart";
 import { useApplyCoupon } from "@/hooks/useCoupon";
 import { useAddress } from "@/hooks/useAddress";
-import { useRewardBalance, useRewardSettings } from "@/hooks/useReward";
 import { useAuthStore } from "@/store/auth.store";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { orderService } from "@/services/order.service";
@@ -29,8 +28,6 @@ export default function CheckoutPage() {
   const clearCart = useClearCart();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
-  const { data: rewardSettings } = useRewardSettings();
-  const { data: rewardBalance } = useRewardBalance();
   const { data: savedAddress } = useAddress();
   const applyCoupon = useApplyCoupon();
 
@@ -39,15 +36,12 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { pay_method: "cod", use_reward: false },
+    defaultValues: { pay_method: "cod" },
   });
-
-  const useReward = watch("use_reward");
 
   useEffect(() => {
     // Wait for the auth store to finish reading localStorage before acting
@@ -64,9 +58,6 @@ export default function CheckoutPage() {
 
   const subTotal = cart?.subTotal ?? 0;
   const couponDiscount = applyCoupon.data?.discountAmount ?? 0;
-
-  const minRedeemPoints = rewardSettings?.redemptionRules?.[0]?.minimum_points ?? Infinity;
-  const canUseRewards = isAuthenticated && (rewardBalance?.rewards ?? 0) >= minRedeemPoints;
 
   const estimatedTotal = useMemo(() => Math.max(subTotal - couponDiscount, 0), [subTotal, couponDiscount]);
 
@@ -207,13 +198,6 @@ export default function CheckoutPage() {
             <input type="hidden" value="cod" {...register("pay_method")} />
           </div>
 
-          {canUseRewards && (
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="accent-foreground" {...register("use_reward")} />
-              Use my reward points ({rewardBalance?.rewards} available)
-            </label>
-          )}
-
           <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
             {isSubmitting ? "Placing order..." : "Place order"}
           </Button>
@@ -261,7 +245,7 @@ export default function CheckoutPage() {
             <span>{formatPrice(estimatedTotal)}</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Shipping{useReward ? " and reward" : ""} discounts are calculated when the order is placed.
+            Shipping discounts are calculated when the order is placed.
           </p>
         </div>
       </div>

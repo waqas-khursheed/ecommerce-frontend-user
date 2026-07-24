@@ -132,12 +132,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <dd>-{formatPrice(order.coupon_discount)}</dd>
               </div>
             )}
-            {!!order.rewards_discount && (
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Rewards</dt>
-                <dd>-{formatPrice(order.rewards_discount)}</dd>
-              </div>
-            )}
             <div className="flex justify-between border-t pt-1 font-semibold">
               <dt>Total</dt>
               <dd>{formatPrice(order.grand_total)}</dd>

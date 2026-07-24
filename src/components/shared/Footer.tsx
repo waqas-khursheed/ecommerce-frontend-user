@@ -140,11 +140,6 @@ export function Footer({ categories, settings }: FooterProps) {
                 Returns &amp; Exchanges
               </Link>
             </li>
-            <li>
-              <Link href="/rewards" className={LINK_CLASS}>
-                Rewards Program
-              </Link>
-            </li>
           </ul>
         </div>
 

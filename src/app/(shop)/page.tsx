@@ -8,13 +8,36 @@ import { BrandStrip } from "@/components/home/BrandStrip";
 import { PromoBanners } from "@/components/home/PromoBanners";
 import { NewsletterForm } from "@/components/shared/NewsletterForm";
 import { RecentlyViewedSection } from "@/components/product/RecentlyViewedSection";
+import type { HomeContent } from "@/types/home";
 
 // Homepage content rarely changes minute-to-minute — ISR keeps it fast
 // without hitting the API on every request.
 export const revalidate = 60;
 
+const EMPTY_HOME: HomeContent = {
+  slides: [],
+  homeBanners: [],
+  sideBanners: [],
+  applicationSlides: [],
+  applicationHomeBanners: [],
+  mobileSliders: [],
+  newArrivals: [],
+  bestSellers: [],
+  onSale: [],
+  categories: [],
+  brands: [],
+  tags: [],
+};
+
 export default async function HomePage() {
-  const home = await homeService.get();
+  // Falls back to an empty homepage instead of throwing — this page is
+  // statically generated (see `revalidate` above), so an unhandled rejection
+  // here would crash the entire production build if the API is unreachable
+  // at build time (e.g. the backend not deployed/reachable yet). Every
+  // section below already guards on `.length > 0`, so an empty payload just
+  // renders a bare page instead of breaking; ISR fills it in for real once
+  // the API is reachable.
+  const home = await homeService.get().catch(() => EMPTY_HOME);
 
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-4 py-6 sm:space-y-16 sm:py-10">

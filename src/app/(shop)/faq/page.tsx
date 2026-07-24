@@ -4,7 +4,11 @@ import { EmptyState } from "@/components/shared/EmptyState";
 export const revalidate = 300;
 
 export default async function FaqPage() {
-  const categories = await cmsService.getFaqs();
+  // Falls back to an empty list instead of throwing — this page is statically
+  // generated (see `revalidate` above), so an unhandled rejection here would
+  // crash the entire production build if the API is unreachable at build
+  // time (e.g. the backend not deployed/reachable yet), not just this page.
+  const categories = await cmsService.getFaqs().catch(() => []);
   const hasFaqs = categories.some((category) => category.faqs.length > 0);
 
   return (

@@ -1,6 +1,21 @@
 import type { Product } from "@/types/product";
 
-export interface CartItem {
+// Filenames returned by POST /api/designs (backed/src/modules/customizations)
+// — build full URLs with uploadUrl("designs", filename). Front and back are
+// independent: either side (or both) may be null depending on what the
+// customer actually designed.
+export interface SavedDesign {
+  design_front_preview_image: string | null;
+  design_front_high_res_image: string | null;
+  design_front_logo_image: string | null;
+  design_front_json_file: string | null;
+  design_back_preview_image: string | null;
+  design_back_high_res_image: string | null;
+  design_back_logo_image: string | null;
+  design_back_json_file: string | null;
+}
+
+export interface CartItem extends Partial<SavedDesign> {
   id: number;
   product_id: number;
   stock_id: number | null;
@@ -10,6 +25,10 @@ export interface CartItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  // Per-unit surcharge snapshotted at add-to-cart time — 0 when that side
+  // wasn't designed. Already folded into lineTotal by the backend.
+  design_front_price?: number;
+  design_back_price?: number;
   // null means untracked/unlimited stock — same convention used by
   // Stock.stock_qty / Product.quantity on the backend.
   remainingQty: number | null;
@@ -50,7 +69,7 @@ export interface CheckoutPayload {
 
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
-export interface OrderDetail {
+export interface OrderDetail extends Partial<SavedDesign> {
   id: number;
   order_id: number;
   product_id: number;
@@ -61,6 +80,8 @@ export interface OrderDetail {
   price: number;
   dis_price: number;
   total: number;
+  design_front_price?: number;
+  design_back_price?: number;
   product?: Pick<Product, "id" | "title" | "slug" | "featured_image">;
 }
 

@@ -3,6 +3,7 @@
 import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { uploadUrl } from "@/lib/http";
 import { formatPrice } from "@/lib/utils";
 import { useCancelOrder, useOrderDetail } from "@/hooks/useOrders";
@@ -76,22 +77,59 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       <div className="rounded-lg border divide-y">
         {order.orderDetails?.map((item) => {
           const image = uploadUrl("products", item.product?.featured_image);
+          const sides = [
+            { label: "Front", preview: uploadUrl("designs", item.design_front_preview_image), highRes: uploadUrl("designs", item.design_front_high_res_image), price: item.design_front_price },
+            { label: "Back", preview: uploadUrl("designs", item.design_back_preview_image), highRes: uploadUrl("designs", item.design_back_high_res_image), price: item.design_back_price },
+          ].filter((s) => s.preview);
+
           return (
-            <div key={item.id} className="flex items-center gap-4 p-4">
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted">
-                {image && <Image src={image} alt={item.product?.title ?? ""} fill className="object-cover" />}
+            <div key={item.id} className="space-y-3 p-4">
+              <div className="flex items-center gap-4">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted">
+                  {image && <Image src={image} alt={item.product?.title ?? ""} fill className="object-cover" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  {item.product ? (
+                    <Link href={`/products/${item.product.slug}`} className="line-clamp-1 text-sm font-medium hover:underline">
+                      {item.product.title}
+                    </Link>
+                  ) : (
+                    <p className="text-sm font-medium">Product unavailable</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>
+                </div>
+                <span className="text-sm font-semibold">{formatPrice(item.total)}</span>
               </div>
-              <div className="min-w-0 flex-1">
-                {item.product ? (
-                  <Link href={`/products/${item.product.slug}`} className="line-clamp-1 text-sm font-medium hover:underline">
-                    {item.product.title}
-                  </Link>
-                ) : (
-                  <p className="text-sm font-medium">Product unavailable</p>
-                )}
-                <p className="text-xs text-muted-foreground">Qty {item.quantity}</p>
-              </div>
-              <span className="text-sm font-semibold">{formatPrice(item.total)}</span>
+
+              {sides.length > 0 && (
+                <div className="flex flex-wrap gap-3 border-t pt-3">
+                  {sides.map((side) => (
+                    <div key={side.label} className="flex items-center gap-2">
+                      <div className="relative size-14 shrink-0 overflow-hidden rounded-md border bg-muted">
+                        {side.preview && <Image src={side.preview} alt={`Your ${side.label.toLowerCase()} design`} fill className="object-contain" />}
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-medium">
+                          {side.label}
+                          {!!side.price && <span className="text-muted-foreground"> (+{formatPrice(side.price)})</span>}
+                        </p>
+                        {side.highRes && (
+                          <a
+                            href={side.highRes}
+                            download
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                          >
+                            <Download className="size-3" />
+                            Download
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}

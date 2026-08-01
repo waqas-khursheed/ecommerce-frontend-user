@@ -27,6 +27,14 @@ export interface ProductGalleryImage {
   image: string;
 }
 
+// A shared logo library asset (see backed/src/database/models/Logo.js) — not
+// owned by any single product, hence no product_id here.
+export interface ProductDefaultLogo {
+  id: number;
+  image: string;
+  title: string | null;
+}
+
 export interface ProductAttributeAssignment {
   id: number;
   attribute: {
@@ -88,6 +96,13 @@ export interface Product {
   brand?: ProductBrand | null;
   is_variation: 0 | 1;
   is_prescription: 0 | 1;
+  customization_enabled: 0 | 1;
+  // Nullable — a side is offered in the designer exactly when its template
+  // image is set (see components/designer/DesignerModal.tsx).
+  customization_front_image: string | null;
+  customization_back_image: string | null;
+  customization_front_price: number;
+  customization_back_price: number;
   weight: number | null;
 
   new_arrival: 0 | 1;
@@ -98,6 +113,7 @@ export interface Product {
 
   // Detail-only relations (undefined on list responses).
   productGalleries?: ProductGalleryImage[];
+  defaultLogos?: ProductDefaultLogo[];
   assignCatToProducts?: { id: number; category_id: number; category: ProductCategory }[];
   assignAttrToProducts?: ProductAttributeAssignment[];
   assignTagToProducts?: ProductTagAssignment[];

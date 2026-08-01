@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, Palette } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/lib/utils";
 import { ORDER_STATUS_LABELS } from "@/types/order";
@@ -30,24 +30,36 @@ export default function OrdersPage() {
   return (
     <div className="space-y-4">
       <div className="divide-y rounded-lg border">
-        {data.orders.map((order) => (
-          <Link
-            key={order.id}
-            href={`/account/orders/${order.id}`}
-            className="flex flex-col gap-1 p-4 hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div>
-              <p className="font-medium">#{order.order_number}</p>
-              <p className="text-sm text-muted-foreground">
-                {new Date(order.created_at).toLocaleDateString()} · {order.pay_method.toUpperCase()}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary">{ORDER_STATUS_LABELS[order.status] ?? "Unknown"}</Badge>
-              <span className="font-semibold">{formatPrice(order.grand_total)}</span>
-            </div>
-          </Link>
-        ))}
+        {data.orders.map((order) => {
+          const hasCustomDesign = order.orderDetails?.some(
+            (item) => item.design_front_preview_image || item.design_back_preview_image
+          );
+
+          return (
+            <Link
+              key={order.id}
+              href={`/account/orders/${order.id}`}
+              className="flex flex-col gap-1 p-4 hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div>
+                <p className="font-medium">#{order.order_number}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(order.created_at).toLocaleDateString()} · {order.pay_method.toUpperCase()}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                {hasCustomDesign && (
+                  <Badge variant="outline" className="gap-1">
+                    <Palette className="size-3" />
+                    Customized
+                  </Badge>
+                )}
+                <Badge variant="secondary">{ORDER_STATUS_LABELS[order.status] ?? "Unknown"}</Badge>
+                <span className="font-semibold">{formatPrice(order.grand_total)}</span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
       <Pagination
         page={data.meta.page}

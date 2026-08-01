@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -271,10 +272,12 @@ export default function ExchangesPage() {
               <div className="flex items-center gap-3 rounded-lg border p-3">
                 <div className="relative size-14 shrink-0 overflow-hidden rounded-md bg-muted">
                   {uploadUrl("products", selectedDetail.product.featured_image) && (
-                    <img
-                      src={uploadUrl("products", selectedDetail.product.featured_image) ?? undefined}
+                    <Image
+                      src={uploadUrl("products", selectedDetail.product.featured_image)!}
                       alt={selectedDetail.product.title}
-                      className="size-full object-cover"
+                      fill
+                      sizes="56px"
+                      className="object-cover"
                     />
                   )}
                 </div>

@@ -1,7 +1,7 @@
 import { http } from "@/lib/http";
 import { getDeviceId } from "@/lib/device-id";
 import type { ApiSuccessResponse } from "@/types/api";
-import type { Cart, CartItem } from "@/types/order";
+import type { Cart, CartItem, SavedDesign } from "@/types/order";
 
 // Endpoints confirmed against backed/src/modules/carts/{routes,controllers,services}
 // (mounted at /api/cart). resolveCartOwner accepts either a Bearer token
@@ -17,7 +17,7 @@ export const cartService = {
     return data.data;
   },
 
-  async add(payload: { product_id: number; stock_id?: number; quantity?: number }): Promise<CartItem> {
+  async add(payload: { product_id: number; stock_id?: number; quantity?: number } & Partial<SavedDesign>): Promise<CartItem> {
     const { data } = await http.post<ApiSuccessResponse<CartItem>>("/cart", payload, {
       headers: deviceHeaders(),
     });

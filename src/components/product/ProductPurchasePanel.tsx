@@ -1,18 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Heart, Minus, Plus } from "lucide-react";
+import Image from "next/image";
+import { Heart, Minus, Palette, Plus, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn, formatPrice } from "@/lib/utils";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
+import { uploadUrl } from "@/lib/http";
 import { useAddToCart } from "@/hooks/useCart";
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from "@/hooks/useWishlist";
 import { useCreateStockAlert } from "@/hooks/useProducts";
 import { useAuthStore } from "@/store/auth.store";
 import { groupVariantOptions, type VariantKey } from "@/lib/variants";
+import { DesignerModal } from "@/components/designer/DesignerModal";
 import type { Product } from "@/types/product";
+import type { SavedDesign } from "@/types/order";
 
 function StockAlertForm({ slug, stockId }: { slug: string; stockId?: number }) {
   const authUser = useAuthStore((state) => state.user);
@@ -50,6 +55,12 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [quantity, setQuantity] = useState(1);
   const [selected, setSelected] = useState<Partial<Record<VariantKey, number>>>({});
+  const [isDesignerOpen, setDesignerOpen] = useState(false);
+  const [design, setDesign] = useState<SavedDesign | null>(null);
+  // Which saved side (if any) is currently blown up in the preview dialog —
+  // the small thumbnail next to "Design saved" is too tiny to actually judge
+  // the result, so clicking it opens the full high-res composite instead.
+  const [previewSide, setPreviewSide] = useState<"front" | "back" | null>(null);
 
   const addToCart = useAddToCart();
   const { data: wishlist } = useWishlist();
@@ -76,7 +87,12 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
 
   const price = matchingStock?.stock_dis_price || matchingStock?.stock_price || product.d_price || product.price;
   const compareAtPrice = matchingStock?.stock_price ?? product.price;
-  const lineTotal = price * quantity;
+  // Per-unit surcharges — each side only costs something once it actually
+  // has a saved composite image for it (an untouched side is free).
+  const frontSurcharge = design?.design_front_preview_image ? Number(product.customization_front_price || 0) : 0;
+  const backSurcharge = design?.design_back_preview_image ? Number(product.customization_back_price || 0) : 0;
+  const unitPriceWithDesign = price + frontSurcharge + backSurcharge;
+  const lineTotal = unitPriceWithDesign * quantity;
   const canAddToCart = !product.is_variation || (allVariantsSelected && !!matchingStock);
 
   // For a variation product, `product.quantity` is always 0 by DB convention
@@ -112,8 +128,19 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
       product_id: product.id,
       stock_id: matchingStock?.id,
       quantity,
+      ...(design ?? {}),
     });
+    setDesign(null);
   };
+
+  const previewUrl = previewSide
+    ? uploadUrl(
+        "designs",
+        previewSide === "front"
+          ? design?.design_front_high_res_image ?? design?.design_front_preview_image
+          : design?.design_back_high_res_image ?? design?.design_back_preview_image
+      )
+    : null;
 
   const toggleWishlist = () => {
     if (!isAuthenticated) {
@@ -199,6 +226,58 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
         <p className="text-xs text-muted-foreground">Maximum available quantity reached.</p>
       )}
 
+      {product.customization_enabled === 1 && (
+        <div className="space-y-2 rounded-lg border p-3">
+          <div className="flex items-center gap-3">
+            {(
+              [
+                { side: "front" as const, src: uploadUrl("designs", design?.design_front_preview_image) },
+                { side: "back" as const, src: uploadUrl("designs", design?.design_back_preview_image) },
+              ].filter((s): s is { side: "front" | "back"; src: string } => !!s.src)
+            ).map(({ side, src }) => (
+              <button
+                key={side}
+                type="button"
+                onClick={() => setPreviewSide(side)}
+                className="group relative size-14 shrink-0 overflow-hidden rounded-md border bg-muted"
+                aria-label={`View your ${side} design`}
+              >
+                <Image src={src} alt={`Your ${side} design`} fill sizes="56px" className="object-contain" />
+                <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/30 group-hover:opacity-100">
+                  <ZoomIn className="size-4 text-white" />
+                </span>
+              </button>
+            ))}
+            <div className="flex-1">
+              <p className="text-sm font-medium">{design ? "Design saved" : "Make it yours"}</p>
+              <p className="text-xs text-muted-foreground">
+                {design ? "Your design will be added with this item." : "Add your own logo or text before ordering."}
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => setDesignerOpen(true)}>
+              <Palette /> {design ? "Edit design" : "Customize"}
+            </Button>
+          </div>
+
+          {(frontSurcharge > 0 || backSurcharge > 0) && (
+            <div className="space-y-0.5 border-t pt-2 text-xs text-muted-foreground">
+              {frontSurcharge > 0 && (
+                <div className="flex justify-between">
+                  <span>Front customization</span>
+                  <span>+{formatPrice(frontSurcharge)}</span>
+                </div>
+              )}
+              {backSurcharge > 0 && (
+                <div className="flex justify-between">
+                  <span>Back customization</span>
+                  <span>+{formatPrice(backSurcharge)}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center gap-3">
         <Button className="h-11 flex-1" disabled={!canAddToCart || outOfStock || addToCart.isPending} onClick={handleAddToCart}>
           {addToCart.isPending ? "Adding..." : "Add to Cart"}
@@ -214,6 +293,28 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
           <Heart className={cn("size-4", isWishlisted && "fill-destructive text-destructive")} />
         </Button>
       </div>
+
+      {product.customization_enabled === 1 && (
+        <DesignerModal
+          product={product}
+          open={isDesignerOpen}
+          onOpenChange={setDesignerOpen}
+          onSaved={setDesign}
+        />
+      )}
+
+      <Dialog open={!!previewSide} onOpenChange={(open) => !open && setPreviewSide(null)}>
+        <DialogContent className="w-full max-w-[calc(100%-1.5rem)] sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{previewSide === "back" ? "Back" : "Front"} design</DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <div className="relative aspect-square w-full overflow-hidden rounded-lg border bg-muted">
+              <Image src={previewUrl} alt={`Your ${previewSide} design`} fill sizes="480px" className="object-contain" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

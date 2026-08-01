@@ -91,7 +91,7 @@ export default function CheckoutPage() {
       const order = await orderService.checkout(payload);
       await clearCart.mutateAsync();
       toast.success("Order placed!");
-      router.push(`/account/orders/${order.id}`);
+      router.push(`/checkout/success/${order.id}`);
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Checkout failed"));
     }

@@ -14,6 +14,10 @@ interface CartItemProps {
 
 export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartItemProps) {
   const image = uploadUrl("products", item.product.featured_image);
+  const designPreviews = [item.design_front_preview_image, item.design_back_preview_image]
+    .map((f) => uploadUrl("designs", f))
+    .filter((src): src is string => !!src);
+  const hasDesign = designPreviews.length > 0;
   const maxQuantity = item.remainingQty === null ? Infinity : item.remainingQty;
   const atMax = item.quantity >= maxQuantity;
 
@@ -22,8 +26,14 @@ export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartI
       <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted sm:size-20">
         {image && <Image src={image} alt={item.product.title} fill sizes="80px" className="object-cover" />}
       </div>
+      {designPreviews.map((src) => (
+        <div key={src} className="relative size-16 shrink-0 overflow-hidden rounded-md border bg-muted sm:size-20">
+          <Image src={src} alt="Your design" fill sizes="80px" className="object-contain" />
+        </div>
+      ))}
       <div className="flex flex-1 flex-col justify-between">
         <p className="line-clamp-2 text-sm font-medium">{item.product.title}</p>
+        {hasDesign && <p className="text-xs text-muted-foreground">Custom design</p>}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Button

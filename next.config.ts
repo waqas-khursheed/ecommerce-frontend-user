@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     // lib/http.ts's uploadUrl() for how image URLs are built.
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "3000", pathname: "/uploads/**" },
+      { protocol: "http", hostname: "127.0.0.1", port: "3000", pathname: "/uploads/**" },
     ],
   },
 };

@@ -306,7 +306,7 @@ export default function ExchangesPage() {
               <Textarea id="other_detail" rows={2} {...register("other_detail")} />
             </div>
 
-            <Button type="submit" disabled={isSubmitting} className="h-11 w-full sm:w-auto">
+            <Button type="submit" loading={isSubmitting} className="h-11 w-full sm:w-auto">
               {isSubmitting ? "Submitting..." : "Submit request"}
             </Button>
           </form>

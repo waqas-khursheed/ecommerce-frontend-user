@@ -1,24 +1,24 @@
-import { BadgeCheck, CreditCard, Globe, Tag } from "lucide-react";
+import Image from "next/image";
+import { uploadUrl } from "@/lib/http";
+import type { TrustBadge } from "@/types/home";
 
-const BADGES = [
-  { icon: Globe, title: "Worldwide Shipping", desc: "We deliver to your doorstep, wherever you are." },
-  { icon: BadgeCheck, title: "Best Quality", desc: "Every product is checked before it ships." },
-  { icon: Tag, title: "Best Offers", desc: "New deals and discounts every week." },
-  { icon: CreditCard, title: "Secure Payments", desc: "Your payment details are always protected." },
-];
+export function TrustBadges({ badges }: { badges: TrustBadge[] }) {
+  if (badges.length === 0) return null;
 
-export function TrustBadges() {
   return (
     <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-      {BADGES.map((badge) => {
-        const Icon = badge.icon;
+      {badges.map((badge) => {
+        const image = uploadUrl("trust-badges", badge.image);
         return (
-          <div key={badge.title} className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
-            <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Icon className="size-5" />
+          <div
+            key={badge.id}
+            className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left"
+          >
+            <div className="relative size-11 shrink-0 overflow-hidden rounded-full bg-primary/10">
+              {image && <Image src={image} alt="" fill sizes="44px" className="object-cover" />}
             </div>
             <p className="text-sm font-semibold">{badge.title}</p>
-            <p className="text-xs text-muted-foreground">{badge.desc}</p>
+            {badge.description && <p className="text-xs text-muted-foreground">{badge.description}</p>}
           </div>
         );
       })}

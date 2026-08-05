@@ -163,7 +163,7 @@ export function DesignerModal({ product, open, onOpenChange, onSaved }: Designer
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={handleSave} disabled={saveDesign.isPending}>
+          <Button type="button" onClick={handleSave} loading={saveDesign.isPending}>
             {saveDesign.isPending ? "Saving..." : "Save Design"}
           </Button>
         </DialogFooter>

@@ -62,7 +62,7 @@ export function ContactForm() {
         <Textarea id="description" rows={5} aria-invalid={!!errors.description} {...register("description")} />
         {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
       </div>
-      <Button type="submit" disabled={isSubmitting} className="h-11 w-full sm:w-auto">
+      <Button type="submit" loading={isSubmitting} className="h-11 w-full sm:w-auto">
         {isSubmitting ? "Sending..." : "Send message"}
       </Button>
     </form>

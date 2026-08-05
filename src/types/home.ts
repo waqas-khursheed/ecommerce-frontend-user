@@ -22,6 +22,14 @@ export interface SideBannerImage extends BannerImage {
   type: string;
 }
 
+export interface TrustBadge {
+  id: number;
+  image: string;
+  title: string;
+  description: string | null;
+  status: 0 | 1;
+}
+
 // Mirrors backed/src/modules/home/controllers/home.controller.js getHomeContent.
 export interface HomeContent {
   slides: Slide[];
@@ -36,4 +44,5 @@ export interface HomeContent {
   categories: ProductCategory[];
   brands: ProductBrand[];
   tags: ProductTag[];
+  trustBadges: TrustBadge[];
 }

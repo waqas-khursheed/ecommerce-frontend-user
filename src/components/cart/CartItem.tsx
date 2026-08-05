@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/shared/Loader";
 import { uploadUrl } from "@/lib/http";
 import { formatPrice } from "@/lib/utils";
 import type { CartItem as CartItemType } from "@/types/order";
@@ -10,9 +11,10 @@ interface CartItemProps {
   onQuantityChange: (quantity: number) => void;
   onRemove: () => void;
   isUpdating?: boolean;
+  isRemoving?: boolean;
 }
 
-export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartItemProps) {
+export function CartItem({ item, onQuantityChange, onRemove, isUpdating, isRemoving }: CartItemProps) {
   const image = uploadUrl("products", item.product.featured_image);
   const designPreviews = [item.design_front_preview_image, item.design_back_preview_image]
     .map((f) => uploadUrl("designs", f))
@@ -44,7 +46,7 @@ export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartI
               onClick={() => onQuantityChange(Math.max(1, item.quantity - 1))}
               aria-label="Decrease quantity"
             >
-              <Minus className="size-3.5" />
+              {isUpdating ? <Loader inline size="sm" /> : <Minus className="size-3.5" />}
             </Button>
             <span className="w-6 text-center text-sm">{item.quantity}</span>
             <Button
@@ -55,7 +57,7 @@ export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartI
               onClick={() => onQuantityChange(Math.min(maxQuantity, item.quantity + 1))}
               aria-label="Increase quantity"
             >
-              <Plus className="size-3.5" />
+              {isUpdating ? <Loader inline size="sm" /> : <Plus className="size-3.5" />}
             </Button>
           </div>
           <span className="text-sm font-semibold">{formatPrice(item.lineTotal)}</span>
@@ -64,8 +66,15 @@ export function CartItem({ item, onQuantityChange, onRemove, isUpdating }: CartI
           <p className="text-xs text-muted-foreground">Maximum available quantity reached.</p>
         )}
       </div>
-      <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={onRemove} aria-label="Remove item">
-        <Trash2 className="size-4 text-muted-foreground" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-8 shrink-0"
+        disabled={isRemoving}
+        onClick={onRemove}
+        aria-label="Remove item"
+      >
+        {isRemoving ? <Loader inline size="sm" /> : <Trash2 className="size-4 text-muted-foreground" />}
       </Button>
     </div>
   );

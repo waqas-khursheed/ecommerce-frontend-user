@@ -41,7 +41,7 @@ function ReviewForm({ productId }: { productId: number }) {
       <StarRating value={rate} onChange={setRate} size="md" />
       <Textarea rows={3} placeholder="Share your thoughts about this product..." {...register("review")} />
       {errors.review && <p className="text-xs text-destructive">{errors.review.message}</p>}
-      <Button type="submit" disabled={createReview.isPending} className="h-10">
+      <Button type="submit" loading={createReview.isPending} className="h-10">
         {createReview.isPending ? "Submitting..." : "Submit review"}
       </Button>
     </form>

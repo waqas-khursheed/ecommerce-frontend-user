@@ -64,7 +64,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </DialogHeader>
                 <DialogFooter>
                   <DialogClose render={<Button variant="outline">Keep order</Button>} />
-                  <Button variant="destructive" disabled={cancelOrder.isPending} onClick={handleCancel}>
+                  <Button variant="destructive" loading={cancelOrder.isPending} onClick={handleCancel}>
                     {cancelOrder.isPending ? "Cancelling..." : "Yes, cancel it"}
                   </Button>
                 </DialogFooter>

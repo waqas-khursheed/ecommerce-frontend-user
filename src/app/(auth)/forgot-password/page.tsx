@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
               <Input id="email" type="email" aria-invalid={!!errors.email} {...register("email")} />
               {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
-            <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
+            <Button type="submit" loading={isSubmitting} className="h-11 w-full">
               {isSubmitting ? "Sending..." : "Send reset code"}
             </Button>
           </form>

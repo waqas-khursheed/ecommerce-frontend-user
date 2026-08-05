@@ -44,7 +44,7 @@ function StockAlertForm({ slug, stockId }: { slug: string; stockId?: number }) {
         onChange={(e) => setEmail(e.target.value)}
         className="h-10"
       />
-      <Button type="submit" variant="outline" className="h-10 shrink-0" disabled={createStockAlert.isPending}>
+      <Button type="submit" variant="outline" className="h-10 shrink-0" loading={createStockAlert.isPending}>
         {createStockAlert.isPending ? "Saving..." : "Notify me"}
       </Button>
     </form>
@@ -66,6 +66,7 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   const { data: wishlist } = useWishlist();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
+  const wishlistPending = addToWishlist.isPending || removeFromWishlist.isPending;
 
   const variantGroups = useMemo(
     () => groupVariantOptions(product.assignAttrToProducts ?? []),
@@ -279,7 +280,12 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
       )}
 
       <div className="flex items-center gap-3">
-        <Button className="h-11 flex-1" disabled={!canAddToCart || outOfStock || addToCart.isPending} onClick={handleAddToCart}>
+        <Button
+          className="h-11 flex-1"
+          disabled={!canAddToCart || outOfStock}
+          loading={addToCart.isPending}
+          onClick={handleAddToCart}
+        >
           {addToCart.isPending ? "Adding..." : "Add to Cart"}
         </Button>
 
@@ -288,9 +294,12 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
           size="icon"
           className="size-11 shrink-0"
           onClick={toggleWishlist}
+          loading={wishlistPending}
           aria-label="Toggle wishlist"
         >
-          <Heart className={cn("size-4", isWishlisted && "fill-destructive text-destructive")} />
+          {!wishlistPending && (
+            <Heart className={cn("size-4", isWishlisted && "fill-destructive text-destructive")} />
+          )}
         </Button>
       </div>
 

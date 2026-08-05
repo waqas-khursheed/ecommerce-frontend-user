@@ -36,8 +36,8 @@ export function NewsletterForm({ className }: { className?: string }) {
           onChange={(e) => setEmail(e.target.value)}
           className="h-11"
         />
-        <Button type="submit" disabled={isSubmitting} className="h-11 shrink-0">
-          {isSubmitting ? "..." : "Subscribe"}
+        <Button type="submit" loading={isSubmitting} className="h-11 shrink-0">
+          {isSubmitting ? "Subscribing..." : "Subscribe"}
         </Button>
       </div>
     </form>

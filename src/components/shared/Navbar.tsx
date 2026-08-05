@@ -19,6 +19,10 @@ interface NavbarProps {
   settings?: WebSetting | null;
 }
 
+// Underline grows in from the left on hover instead of snapping on/off.
+const NAV_LINK_CLASS =
+  "relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-foreground after:transition-all after:duration-300 hover:after:w-full";
+
 function BrandMark({ settings }: { settings?: WebSetting | null }) {
   const logoUrl = uploadUrl("settings", settings?.main_logo ?? undefined);
   const siteName = settings?.website_name || APP_NAME;
@@ -88,15 +92,11 @@ export function Navbar({ categories, settings }: NavbarProps) {
         </Link>
 
         <nav className="hidden shrink-0 items-center gap-5 lg:flex">
-          <Link href="/products" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+          <Link href="/products" className={NAV_LINK_CLASS}>
             All Products
           </Link>
           {topCategories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
+            <Link key={category.id} href={`/category/${category.slug}`} className={NAV_LINK_CLASS}>
               {category.title}
             </Link>
           ))}

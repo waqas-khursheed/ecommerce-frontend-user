@@ -27,6 +27,7 @@ const EMPTY_HOME: HomeContent = {
   categories: [],
   brands: [],
   tags: [],
+  trustBadges: [],
 };
 
 export default async function HomePage() {
@@ -43,7 +44,7 @@ export default async function HomePage() {
     <div className="mx-auto max-w-7xl space-y-12 px-4 py-6 sm:space-y-16 sm:py-10">
       <HeroSlider slides={home.slides} />
 
-      <TrustBadges />
+      <TrustBadges badges={home.trustBadges} />
 
       <RecentlyViewedSection />
 

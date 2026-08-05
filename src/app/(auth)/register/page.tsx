@@ -74,7 +74,7 @@ function RegisterForm() {
             {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
+          <Button type="submit" loading={isSubmitting} className="h-11 w-full">
             {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
         </form>

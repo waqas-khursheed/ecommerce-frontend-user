@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { HandCoins, Headphones, Mail, MapPin, Phone, RotateCcw, Send, Truck } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
 import { uploadUrl } from "@/lib/http";
 import { NewsletterForm } from "@/components/shared/NewsletterForm";
@@ -12,6 +12,31 @@ interface FooterProps {
   settings?: WebSetting | null;
 }
 
+const SERVICE_BADGES = [
+  { Icon: Truck, title: "Fast Shipping", subtitle: "Shipped In 1-3 Days" },
+  { Icon: RotateCcw, title: "Free Returns", subtitle: "Free 7 Days Return" },
+  { Icon: HandCoins, title: "Payment On Delivery", subtitle: "Cash On Delivery Option" },
+  { Icon: Headphones, title: "Customer Support", subtitle: "Phone and Email" },
+];
+
+function ServiceBadgeStrip() {
+  return (
+    <div className="border-b bg-muted/30">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y sm:grid-cols-4 sm:divide-y-0">
+        {SERVICE_BADGES.map(({ Icon, title, subtitle }) => (
+          <div key={title} className="flex items-center gap-3 px-4 py-5 sm:px-6">
+            <Icon className="size-6 shrink-0 text-foreground/70" strokeWidth={1.5} />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{title}</p>
+              <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const SOCIAL_LINKS = (settings?: WebSetting | null) =>
   [
     { href: settings?.facebook, label: "Facebook", Icon: FacebookIcon },
@@ -20,8 +45,9 @@ const SOCIAL_LINKS = (settings?: WebSetting | null) =>
     { href: settings?.youtube, label: "YouTube", Icon: YoutubeIcon },
   ].filter((link): link is { href: string; label: string; Icon: typeof FacebookIcon } => !!link.href);
 
+// Underline grows in from the left on hover instead of snapping on/off.
 const LINK_CLASS =
-  "text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline";
+  "relative inline-block text-sm text-muted-foreground transition-colors hover:text-foreground after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-foreground after:transition-all after:duration-300 hover:after:w-full";
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return <p className="text-sm font-semibold tracking-wide text-foreground uppercase">{children}</p>;
@@ -36,6 +62,8 @@ export function Footer({ categories, settings }: FooterProps) {
 
   return (
     <footer className="border-t bg-gradient-to-b from-muted/20 to-muted/40">
+      <ServiceBadgeStrip />
+
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-12">
         <div className="space-y-4 lg:col-span-4">
           {logoUrl ? (

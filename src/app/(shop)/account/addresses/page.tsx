@@ -271,7 +271,7 @@ export default function AddressesPage() {
             />
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="h-11 w-full sm:w-auto">
+          <Button type="submit" loading={isSubmitting} className="h-11 w-full sm:w-auto">
             {isSubmitting ? "Saving..." : "Save address"}
           </Button>
         </form>

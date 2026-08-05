@@ -198,7 +198,7 @@ export default function CheckoutPage() {
             <input type="hidden" value="cod" {...register("pay_method")} />
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
+          <Button type="submit" loading={isSubmitting} className="h-11 w-full">
             {isSubmitting ? "Placing order..." : "Place order"}
           </Button>
         </form>
@@ -224,7 +224,7 @@ export default function CheckoutPage() {
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
             />
-            <Button type="button" variant="outline" onClick={handleApplyCoupon} disabled={applyCoupon.isPending}>
+            <Button type="button" variant="outline" onClick={handleApplyCoupon} loading={applyCoupon.isPending}>
               Apply
             </Button>
           </div>

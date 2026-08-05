@@ -43,6 +43,7 @@ export default function CartPage() {
               key={item.id}
               item={item}
               isUpdating={updateQuantity.isPending}
+              isRemoving={removeItem.isPending}
               onQuantityChange={(qty) => updateQuantity.mutate({ id: item.id, quantity: qty })}
               onRemove={() => removeItem.mutate(item.id)}
             />

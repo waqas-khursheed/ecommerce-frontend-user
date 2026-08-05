@@ -61,7 +61,7 @@ function ResetPasswordForm() {
             <Input id="password" type="password" aria-invalid={!!errors.password} {...register("password")} />
             {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
-          <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
+          <Button type="submit" loading={isSubmitting} className="h-11 w-full">
             {isSubmitting ? "Resetting..." : "Reset password"}
           </Button>
         </form>

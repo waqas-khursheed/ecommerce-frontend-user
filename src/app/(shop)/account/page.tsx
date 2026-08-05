@@ -73,7 +73,7 @@ function ProfileForm() {
         <Label htmlFor="company_name">Company</Label>
         <Input id="company_name" {...register("company_name")} />
       </div>
-      <Button type="submit" disabled={isSubmitting} className="h-11">
+      <Button type="submit" loading={isSubmitting} className="h-11">
         {isSubmitting ? "Saving..." : "Save changes"}
       </Button>
     </form>
@@ -111,7 +111,7 @@ function ChangePasswordForm() {
         <Input id="new_password" type="password" aria-invalid={!!errors.new_password} {...register("new_password")} />
         {errors.new_password && <p className="text-xs text-destructive">{errors.new_password.message}</p>}
       </div>
-      <Button type="submit" disabled={isSubmitting} className="h-11">
+      <Button type="submit" loading={isSubmitting} className="h-11">
         {isSubmitting ? "Updating..." : "Change password"}
       </Button>
     </form>
